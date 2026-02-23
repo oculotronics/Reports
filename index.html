@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Factory Test Report Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0a0c10; --bg2:#111520; --bg3:#161c28;
+  --border:#1e2d45; --accent:#00d4ff; --accent2:#0088cc;
+  --pass:#00e676; --fail:#ff1744; --warn:#ffab00;
+  --text:#c8d8e8; --dim:#5a7090; --bright:#e8f4ff;
+  --mono:'Share Tech Mono',monospace;
+  --head:'Rajdhani',sans-serif;
+  --body:'Exo 2',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--body);min-height:100vh}
+body::before{content:'';position:fixed;inset:0;
+  background-image:linear-gradient(rgba(0,212,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,.03) 1px,transparent 1px);
+  background-size:40px 40px;pointer-events:none;z-index:0}
+
+.wrap{max-width:860px;margin:0 auto;padding:40px 20px;position:relative;z-index:1}
+
+/* ─ TOP HEADER ─ */
+.top-header{border:1px solid var(--border);background:var(--bg2);padding:28px 32px;margin-bottom:32px;position:relative;overflow:hidden}
+.top-header::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,var(--accent),transparent)}
+.top-tag{font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:3px;text-transform:uppercase;margin-bottom:8px;opacity:.8}
+.top-title{font-family:var(--head);font-size:28px;font-weight:700;color:var(--bright);letter-spacing:2px;text-transform:uppercase}
+
+/* ─ STEP CARD ─ */
+.step-card{background:var(--bg2);border:1px solid var(--border);margin-bottom:16px;overflow:hidden}
+.step-head{background:var(--bg3);padding:14px 22px;display:flex;align-items:center;gap:14px;cursor:pointer;user-select:none;border-bottom:1px solid var(--border)}
+.step-num{width:28px;height:28px;border:1px solid var(--accent2);border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:11px;color:var(--accent);flex-shrink:0}
+.step-title{font-family:var(--head);font-size:14px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--bright)}
+.step-subtitle{font-family:var(--mono);font-size:10px;color:var(--dim);margin-left:auto;letter-spacing:1px}
+.step-body{padding:22px 22px 26px}
+
+/* ─ FORM FIELDS ─ */
+.fields{display:grid;gap:16px}
+.fields.col2{grid-template-columns:1fr 1fr}
+.fields.col3{grid-template-columns:1fr 1fr 1fr}
+.field{display:flex;flex-direction:column;gap:6px}
+.field.span2{grid-column:1/-1}
+label{font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:2px;text-transform:uppercase}
+input[type=text],input[type=number],input[type=datetime-local]{
+  background:var(--bg3);border:1px solid var(--border);color:var(--bright);
+  font-family:var(--mono);font-size:13px;padding:11px 14px;outline:none;width:100%;
+  transition:border-color .2s}
+input:focus{border-color:var(--accent2);box-shadow:0 0 0 1px rgba(0,136,204,.2)}
+
+/* ─ LIVE CALC DISPLAY ─ */
+.calc-box{background:var(--bg3);border:1px solid var(--border);border-left:2px solid var(--accent2);
+  padding:10px 14px;font-family:var(--mono);font-size:13px;color:var(--dim);min-height:42px;
+  display:flex;align-items:center;justify-content:space-between;gap:8px;transition:all .2s}
+.calc-box .val{font-size:15px;font-weight:700;color:var(--accent)}
+.calc-box .hint{font-size:9px;color:var(--dim);opacity:.6;text-align:right;line-height:1.4}
+.calc-box.pass{border-left-color:var(--pass);background:rgba(0,230,118,.04)}
+.calc-box.pass .val{color:var(--pass)}
+.calc-box.fail{border-left-color:var(--fail);background:rgba(255,23,68,.04)}
+.calc-box.fail .val{color:var(--fail)}
+
+/* ─ REMARK BOX ─ */
+.remark{margin-top:10px;padding:12px 16px;border-left:3px solid var(--warn);background:rgba(255,171,0,.05);
+  font-size:12px;color:#ffcc55;font-family:var(--body);line-height:1.6;display:none}
+.remark.show{display:block}
+.remark.ok{border-left-color:var(--pass);background:rgba(0,230,118,.05);color:#80ffb0}
+.remark.bad{border-left-color:var(--fail);background:rgba(255,23,68,.05);color:#ff8099}
+.remark strong{font-weight:700;display:block;margin-bottom:3px}
+
+/* ─ GENERATE BTN ─ */
+.gen-wrap{margin-top:24px;display:flex;gap:12px;align-items:center}
+.btn-gen{background:transparent;border:1px solid var(--accent);color:var(--accent);
+  font-family:var(--head);font-size:14px;font-weight:700;letter-spacing:3px;text-transform:uppercase;
+  padding:15px 40px;cursor:pointer;position:relative;overflow:hidden;transition:all .2s}
+.btn-gen::before{content:'';position:absolute;inset:0;background:var(--accent);transform:translateX(-100%);transition:.25s;z-index:0}
+.btn-gen:hover::before{transform:translateX(0)}
+.btn-gen:hover{color:var(--bg)}
+.btn-gen span{position:relative;z-index:1}
+.btn-reset{background:transparent;border:1px solid var(--border);color:var(--dim);
+  font-family:var(--head);font-size:12px;letter-spacing:2px;text-transform:uppercase;
+  padding:15px 24px;cursor:pointer;transition:all .2s}
+.btn-reset:hover{border-color:var(--text);color:var(--text)}
+
+/* ─ OUTPUT ─ */
+#out{display:none;margin-top:36px}
+#out.show{display:block}
+.out-header{border:1px solid var(--border);background:var(--bg2);padding:24px 28px;margin-bottom:20px;position:relative;overflow:hidden}
+.out-header::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent)}
+.out-id-line{font-family:var(--mono);font-size:12px;color:var(--accent);letter-spacing:2px;margin-bottom:4px}
+.out-title{font-family:var(--head);font-size:24px;font-weight:700;color:var(--bright);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
+.out-meta{display:flex;gap:28px;flex-wrap:wrap}
+.out-meta-item{font-family:var(--mono);font-size:11px;color:var(--dim)}
+.out-meta-item span{color:var(--bright);display:block;font-size:13px;margin-top:2px}
+
+.summary-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+.sum-card{background:var(--bg2);border:1px solid var(--border);padding:18px;text-align:center}
+.sum-card.c-neutral{border-top:2px solid var(--accent)}
+.sum-card.c-pass{border-top:2px solid var(--pass)}
+.sum-card.c-fail{border-top:2px solid var(--fail)}
+.sum-n{font-family:var(--head);font-size:32px;font-weight:700;line-height:1;margin-bottom:4px}
+.c-neutral .sum-n{color:var(--accent)} .c-pass .sum-n{color:var(--pass)} .c-fail .sum-n{color:var(--fail)}
+.sum-l{font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:2px;text-transform:uppercase}
+
+.overall-banner{padding:16px 24px;margin-bottom:20px;font-family:var(--head);font-size:16px;font-weight:700;
+  letter-spacing:3px;text-transform:uppercase;text-align:center;border:1px solid}
+.overall-banner.pass{background:rgba(0,230,118,.08);color:var(--pass);border-color:rgba(0,230,118,.3)}
+.overall-banner.fail{background:rgba(255,23,68,.08);color:var(--fail);border-color:rgba(255,23,68,.3)}
+
+/* ─ RESULT TABLE ─ */
+.section-block{background:var(--bg2);border:1px solid var(--border);margin-bottom:16px;overflow:hidden}
+.sec-head{background:var(--bg3);padding:11px 20px;font-family:var(--head);font-size:12px;font-weight:600;
+  letter-spacing:3px;text-transform:uppercase;color:var(--accent);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:8px}
+.sec-head::before{content:'';width:5px;height:5px;background:var(--accent);transform:rotate(45deg);flex-shrink:0}
+table{width:100%;border-collapse:collapse}
+th{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--dim);
+  padding:10px 18px;text-align:left;border-bottom:1px solid var(--border);background:rgba(0,136,204,.05)}
+td{padding:13px 18px;font-size:13px;border-bottom:1px solid rgba(30,45,69,.4);vertical-align:top}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(0,212,255,.02)}
+.t-name{font-weight:600;color:var(--bright);font-family:var(--body)}
+.t-val{font-family:var(--mono);color:var(--accent);font-size:13px}
+.t-formula{font-size:9px;color:var(--dim);font-family:var(--mono);margin-top:3px;opacity:.6}
+.t-remark{font-size:12px;color:#ccc;line-height:1.5;max-width:340px}
+.t-remark.r-ok{color:#80ffb0} .t-remark.r-bad{color:#ff8099} .t-remark.r-warn{color:#ffcc55}
+
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:2px}
+.badge::before{content:'';width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.badge.pass{background:rgba(0,230,118,.08);color:var(--pass);border:1px solid rgba(0,230,118,.3)}
+.badge.pass::before{background:var(--pass);box-shadow:0 0 5px var(--pass)}
+.badge.fail{background:rgba(255,23,68,.08);color:var(--fail);border:1px solid rgba(255,23,68,.3)}
+.badge.fail::before{background:var(--fail);box-shadow:0 0 5px var(--fail)}
+.badge.na{background:rgba(90,112,144,.1);color:var(--dim);border:1px solid rgba(90,112,144,.2)}
+.badge.na::before{background:var(--dim)}
+
+.btn-print{background:transparent;border:1px solid var(--border);color:var(--dim);font-family:var(--head);
+  font-size:11px;letter-spacing:2px;text-transform:uppercase;padding:9px 18px;cursor:pointer;transition:all .2s;margin-top:16px}
+.btn-print:hover{border-color:var(--text);color:var(--text)}
+
+@media print{
+  body{background:#fff;color:#111} body::before{display:none}
+  .step-card,.gen-wrap,.btn-print{display:none!important}
+  #out{display:block!important}
+  :root{--bg:#fff;--bg2:#f5f7fa;--bg3:#eef0f4;--border:#cdd;--accent:#005fa3;--pass:#006830;--fail:#b00020;--bright:#111;--text:#333;--dim:#666}
+  .badge.pass{background:#e6f9ee;color:#006830;border-color:#006830}
+  .badge.fail{background:#ffe8ec;color:#b00020;border-color:#b00020}
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+#out.show{animation:fadeUp .35s ease}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- PAGE TITLE -->
+<div class="top-header">
+  <div class="top-tag">Industrial QC · Pre-Commissioning</div>
+  <div class="top-title">Factory Test Report Generator</div>
+</div>
+
+<!-- ═══════════════ STEP 1 — Basic Info ═══════════════ -->
+<div class="step-card">
+  <div class="step-head">
+    <div class="step-num">1</div>
+    <div class="step-title">Basic Information</div>
+    <div class="step-subtitle">Device ID · Dates</div>
+  </div>
+  <div class="step-body">
+    <div class="fields col2">
+      <div class="field">
+        <label>Report / Device ID</label>
+        <input type="text" id="f-id" placeholder="e.g. DARSH-TR-26-05">
+      </div>
+      <div class="field">
+        <label>Report Title</label>
+        <input type="text" id="f-title" placeholder="e.g. Pre Commisioning Factory Test">
+      </div>
+      <div class="field">
+        <label>Start Date &amp; Time</label>
+        <input type="datetime-local" id="f-start">
+      </div>
+      <div class="field">
+        <label>End Date &amp; Time</label>
+        <input type="datetime-local" id="f-end" oninput="calcTime()">
+      </div>
+      <div class="field span2">
+        <label>Running Time &nbsp;<span style="color:var(--accent);font-size:9px">ƒ = (End − Start) × 24</span></label>
+        <div class="calc-box" id="c-runtime"><span class="val">—</span><span class="hint">Enter both dates</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ STEP 2 — RIS ═══════════════ -->
+<div class="step-card">
+  <div class="step-head">
+    <div class="step-num">2</div>
+    <div class="step-title">RIS — Item Counts</div>
+    <div class="step-subtitle">Total · Passed · Rejected</div>
+  </div>
+  <div class="step-body">
+    <div class="fields col3">
+      <div class="field">
+        <label>Total No. of Items</label>
+        <input type="number" id="f-total" placeholder="e.g. 372001" oninput="calcAll()">
+      </div>
+      <div class="field">
+        <label>Passed Items</label>
+        <input type="number" id="f-pass" placeholder="e.g. 0" oninput="calcAll()">
+      </div>
+      <div class="field">
+        <label>Rejected Items</label>
+        <input type="number" id="f-reject" placeholder="e.g. 372001" oninput="calcAll()">
+      </div>
+    </div>
+    <!-- remark shown after controller values filled -->
+    <div class="remark" id="rm-total"></div>
+    <div class="remark" id="rm-reject"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ STEP 3 — Controller ═══════════════ -->
+<div class="step-card">
+  <div class="step-head">
+    <div class="step-num">3</div>
+    <div class="step-title">Controller Triggers</div>
+    <div class="step-subtitle">External · Rejection · Difference</div>
+  </div>
+  <div class="step-body">
+    <div class="fields col3">
+      <div class="field">
+        <label>External Trigger Count</label>
+        <input type="number" id="f-ext" placeholder="e.g. 372911" oninput="calcAll()">
+      </div>
+      <div class="field">
+        <label>Rejection Trigger Count</label>
+        <input type="number" id="f-rjt" placeholder="e.g. 372895" oninput="calcAll()">
+      </div>
+      <div class="field">
+        <label>Difference &nbsp;<span style="color:var(--accent);font-size:9px">ƒ = External − Rejection</span></label>
+        <div class="calc-box" id="c-diff"><span class="val">—</span><span class="hint">B15 − B17</span></div>
+      </div>
+    </div>
+    <div class="remark" id="rm-diff"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ STEP 4 — Reports Validation ═══════════════ -->
+<div class="step-card">
+  <div class="step-head">
+    <div class="step-num">4</div>
+    <div class="step-title">Reports Validation</div>
+    <div class="step-subtitle">Row Count · Class Counts</div>
+  </div>
+  <div class="step-body">
+    <div class="fields col2">
+      <div class="field">
+        <label>Final Report Rows Count</label>
+        <input type="number" id="f-rows" placeholder="e.g. 372001" oninput="calcAll()">
+      </div>
+      <div class="field">
+        <label>Class Counts</label>
+        <input type="number" id="f-class" placeholder="e.g. 1" oninput="calcAll()">
+      </div>
+    </div>
+    <div class="remark" id="rm-rows"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ STEP 5 — Image Count ═══════════════ -->
+<div class="step-card">
+  <div class="step-head">
+    <div class="step-num">5</div>
+    <div class="step-title">Image Count Validation</div>
+    <div class="step-subtitle">Top Images · Side Images</div>
+  </div>
+  <div class="step-body">
+    <div class="fields col3">
+      <div class="field">
+        <label>Top Images</label>
+        <input type="number" id="f-top" placeholder="e.g. 372912" oninput="calcAll()">
+      </div>
+      <div class="field">
+        <label>Side Images</label>
+        <input type="number" id="f-side" placeholder="e.g. 745820" oninput="calcAll()">
+      </div>
+      <div class="field">
+        <label>Diff (Top×2 − Side) &nbsp;<span style="color:var(--accent);font-size:9px">ƒ = B29×2 − B31</span></label>
+        <div class="calc-box" id="c-imgdiff"><span class="val">—</span><span class="hint">Top×2 − Side</span></div>
+      </div>
+    </div>
+    <div class="remark" id="rm-img"></div>
+  </div>
+</div>
+
+<!-- GENERATE -->
+<div class="gen-wrap">
+  <button class="btn-gen" onclick="generate()"><span>⟶ Generate Report</span></button>
+  <button class="btn-reset" onclick="resetAll()">Reset</button>
+</div>
+
+<!-- ═══════════════ OUTPUT REPORT ═══════════════ -->
+<div id="out">
+
+  <div class="out-header">
+    <div class="out-id-line" id="o-id">—</div>
+    <div class="out-title" id="o-title">—</div>
+    <div class="out-meta">
+      <div class="out-meta-item">START<span id="o-start">—</span></div>
+      <div class="out-meta-item">END<span id="o-end">—</span></div>
+      <div class="out-meta-item">RUNNING TIME<span id="o-rt">—</span></div>
+    </div>
+  </div>
+
+  <div id="o-banner" class="overall-banner fail">OVERALL RESULT: FAIL</div>
+
+  <div class="summary-row">
+    <div class="sum-card c-neutral"><div class="sum-n" id="o-total-tests">5</div><div class="sum-l">Total Checks</div></div>
+    <div class="sum-card c-pass"><div class="sum-n" id="o-pass-ct">0</div><div class="sum-l">Passed</div></div>
+    <div class="sum-card c-fail"><div class="sum-n" id="o-fail-ct">0</div><div class="sum-l">Failed</div></div>
+  </div>
+
+  <!-- RIS -->
+  <div class="section-block">
+    <div class="sec-head">RIS — Item Statistics</div>
+    <table>
+      <thead><tr><th>Parameter</th><th>Value</th><th>Status</th><th>Remark</th></tr></thead>
+      <tbody id="t-ris"></tbody>
+    </table>
+  </div>
+
+  <!-- Controller -->
+  <div class="section-block">
+    <div class="sec-head">Controller</div>
+    <table>
+      <thead><tr><th>Parameter</th><th>Value</th><th>Status</th><th>Remark</th></tr></thead>
+      <tbody id="t-ctrl"></tbody>
+    </table>
+  </div>
+
+  <!-- Reports -->
+  <div class="section-block">
+    <div class="sec-head">Reports Validation</div>
+    <table>
+      <thead><tr><th>Parameter</th><th>Value</th><th>Status</th><th>Remark</th></tr></thead>
+      <tbody id="t-rpv"></tbody>
+    </table>
+  </div>
+
+  <!-- Image -->
+  <div class="section-block">
+    <div class="sec-head">Image Count Validation</div>
+    <table>
+      <thead><tr><th>Parameter</th><th>Value</th><th>Status</th><th>Remark</th></tr></thead>
+      <tbody id="t-img"></tbody>
+    </table>
+  </div>
+
+  <button class="btn-print" onclick="window.print()">⎙ Print / Save as PDF</button>
+</div><!-- /out -->
+
+</div><!-- /wrap -->
+
+<script>
+const $ = id => document.getElementById(id);
+const n = id => parseFloat($(id)?.value) || 0;
+const s = id => $(id)?.value?.trim() || '';
+
+/* ── FORMULA FUNCTIONS (mirrors exact Excel formulas) ── */
+
+// D4 = (B4−A4)*24  →  running hours decimal
+function fRuntime(start, end) {
+  if (!start || !end) return null;
+  const h = (new Date(end) - new Date(start)) / 3600000;
+  return h > 0 ? h : null;
+}
+
+// B19 = B15−B17  (Controller difference)
+function fDiff(ext, rjt) { return ext - rjt; }
+
+// D7  = IF(B15−B7=0,"PASS","FAIL")  Total items vs external trigger
+function fTotalStatus(ext, total) { return (ext - total) === 0 ? 'PASS' : 'FAIL'; }
+
+// D11 = IF(B11−B17=0,"PASS","FAIL")  Rejected vs rejection trigger
+function fRejectStatus(rej, rjt) { return (rej - rjt) === 0 ? 'PASS' : 'FAIL'; }
+
+// D19 = IF(B19−B25=0,"PASS","FAIL")  Difference vs class counts
+function fDiffStatus(diff, cls) { return (diff - cls) === 0 ? 'PASS' : 'FAIL'; }
+
+// D23 = IF(B7−B23=0,"PASS","FAIL")  Total items vs report rows
+function fRowsStatus(total, rows) { return (total - rows) === 0 ? 'PASS' : 'FAIL'; }
+
+// B33 = B29*2−B31   Image diff
+function fImgDiff(top, side) { return top * 2 - side; }
+
+// D33 = IF(B33=0,"PASS","FAIL")
+function fImgStatus(diff) { return diff === 0 ? 'PASS' : 'FAIL'; }
+
+/* ── PLAIN-ENGLISH REMARKS ── */
+
+function remarkTotal(status, ext, total) {
+  if (!ext || !total) return null;
+  if (status === 'PASS') return {
+    cls:'ok',
+    title:'✔ Total Items Match',
+    body:`External trigger count (${ext.toLocaleString()}) equals total items processed (${total.toLocaleString()}). Every item received a trigger — no missing triggers detected.`
+  };
+  const gap = Math.abs(ext - total);
+  return {
+    cls:'bad',
+    title:'✘ Trigger–Item Count Mismatch',
+    body:`External trigger count (${ext.toLocaleString()}) ≠ total items (${total.toLocaleString()}). Gap of ${gap.toLocaleString()} — system may have missed triggers or counted extra items. Verify conveyor/sensor synchronisation.`
+  };
+}
+
+function remarkReject(status, rej, rjt) {
+  if (!rej && !rjt) return null;
+  if (status === 'PASS') return {
+    cls:'ok',
+    title:'✔ Rejection Count Matches Trigger',
+    body:`Rejected items (${rej.toLocaleString()}) equals rejection trigger count (${rjt.toLocaleString()}). Rejection mechanism fired exactly once per rejected item.`
+  };
+  const gap = Math.abs(rej - rjt);
+  return {
+    cls:'bad',
+    title:'✘ Rejection Count vs Trigger Mismatch',
+    body:`Rejected items (${rej.toLocaleString()}) ≠ rejection trigger count (${rjt.toLocaleString()}). Difference of ${gap.toLocaleString()} — some items may have been rejected without a trigger, or trigger fired without actual rejection.`
+  };
+}
+
+function remarkDiff(status, diff, cls) {
+  if (isNaN(diff)) return null;
+  if (status === 'PASS') return {
+    cls:'ok',
+    title:'✔ Controller Difference Within Tolerance',
+    body:`Difference between External and Rejection triggers is ${diff} which matches Class Counts (${cls}). Controller readings are consistent.`
+  };
+  return {
+    cls:'bad',
+    title:'✘ Controller Trigger Gap Detected',
+    body:`Difference is ${diff} but expected ${cls}. There are ${Math.abs(diff - cls)} extra unaccounted trigger events. This often happens when the Arduino controller lags behind at high trigger rates — check serial buffer overflow or polling delays.`
+  };
+}
+
+function remarkRows(status, total, rows) {
+  if (!total || !rows) return null;
+  if (status === 'PASS') return {
+    cls:'ok',
+    title:'✔ Report Rows Match Total Items',
+    body:`Final report contains ${rows.toLocaleString()} rows, exactly matching total items (${total.toLocaleString()}). All items were logged successfully.`
+  };
+  const gap = total - rows;
+  const missing = gap > 0 ? `${gap.toLocaleString()} rows are missing from the final report.` : `Report has ${Math.abs(gap).toLocaleString()} extra rows beyond expected.`;
+  return {
+    cls:'bad',
+    title:'✘ Report Row Count Mismatch',
+    body:`Total items: ${total.toLocaleString()} — Report rows: ${rows.toLocaleString()}. ${missing} If the last batch report was not generated (e.g. power cut mid-cycle), the final CSV will be incomplete.`
+  };
+}
+
+function remarkImg(status, diff, top, side) {
+  if (!top && !side) return null;
+  if (status === 'PASS') return {
+    cls:'ok',
+    title:'✔ Image Count Balanced',
+    body:`Side images (${side.toLocaleString()}) = Top images × 2 (${(top*2).toLocaleString()}). Both cameras captured images for every item on both passes.`
+  };
+  const abs = Math.abs(diff);
+  return {
+    cls:'bad',
+    title:'✘ Camera Image Count Imbalance',
+    body:`Expected side images: ${(top*2).toLocaleString()} (Top × 2), actual: ${side.toLocaleString()}. Difference: ${abs.toLocaleString()} images. ${diff > 0 ? 'More top images than side — side camera missed some triggers.' : 'More side images than top — top camera missed some triggers or side camera double-fired.'} Check if power was interrupted while images were being saved.`
+  };
+}
+
+/* ── LIVE CALC (updates calc boxes + inline remarks while typing) ── */
+
+function calcTime() {
+  const rt = fRuntime(s('f-start'), s('f-end'));
+  const el = $('c-runtime');
+  if (rt === null) {
+    el.className = 'calc-box';
+    el.innerHTML = `<span class="val">—</span><span class="hint">Enter both dates</span>`;
+  } else {
+    const h = Math.floor(rt), m = Math.round((rt - h) * 60);
+    el.className = 'calc-box pass';
+    el.innerHTML = `<span class="val">${h}:${String(m).padStart(2,'0')} HH:MM</span><span class="hint">=(End−Start)×24<br>${rt.toFixed(4)} hours</span>`;
+  }
+}
+
+function calcAll() {
+  calcTime();
+  const total = n('f-total'), ext = n('f-ext'), rjt = n('f-rjt');
+  const rej = n('f-reject'), cls = n('f-class'), rows = n('f-rows');
+  const top = n('f-top'), side = n('f-side');
+  const diff = fDiff(ext, rjt);
+  const imgDiff = fImgDiff(top, side);
+
+  // Diff calc box
+  if (ext || rjt) {
+    $('c-diff').className = 'calc-box is-value';
+    $('c-diff').innerHTML = `<span class="val" style="color:var(--accent)">${diff.toLocaleString()}</span><span class="hint">B15−B17<br>External−Rejection</span>`;
+    $('c-diff').style.borderLeftColor = 'var(--accent)';
+  }
+
+  // Image diff calc box
+  if (top || side) {
+    const imgCls = fImgStatus(imgDiff) === 'PASS' ? 'calc-box pass' : 'calc-box fail';
+    $('c-imgdiff').className = imgCls;
+    $('c-imgdiff').innerHTML = `<span class="val">${imgDiff.toLocaleString()}</span><span class="hint">B29×2−B31<br>Top×2−Side</span>`;
+  }
+
+  // Inline remarks
+  showRemark('rm-total',  ext && total ? remarkTotal(fTotalStatus(ext,total), ext, total) : null);
+  showRemark('rm-reject', rej && rjt   ? remarkReject(fRejectStatus(rej,rjt), rej, rjt) : null);
+  showRemark('rm-diff',   (ext || rjt) ? remarkDiff(fDiffStatus(diff,cls), diff, cls) : null);
+  showRemark('rm-rows',   total && rows ? remarkRows(fRowsStatus(total,rows), total, rows) : null);
+  showRemark('rm-img',    (top || side) ? remarkImg(fImgStatus(imgDiff), imgDiff, top, side) : null);
+}
+
+function showRemark(id, data) {
+  const el = $(id);
+  if (!data) { el.className = 'remark'; el.innerHTML = ''; return; }
+  el.className = `remark show ${data.cls}`;
+  el.innerHTML = `<strong>${data.title}</strong>${data.body}`;
+}
+
+/* ── GENERATE REPORT ── */
+
+function badge(st) {
+  if (!st) return '<span class="badge na">N/A</span>';
+  return st === 'PASS'
+    ? '<span class="badge pass">PASS</span>'
+    : '<span class="badge fail">FAIL</span>';
+}
+
+function tRow(name, value, formula, status, remark, remarkCls) {
+  const remarkHtml = remark
+    ? `<span class="t-remark ${remarkCls||''}">${remark}</span>`
+    : '<span style="color:var(--dim);font-size:12px">—</span>';
+  return `<tr>
+    <td class="t-name">${name}</td>
+    <td><span class="t-val">${value ?? '—'}</span>${formula ? `<div class="t-formula">${formula}</div>` : ''}</td>
+    <td>${badge(status)}</td>
+    <td>${remarkHtml}</td>
+  </tr>`;
+}
+
+function fmtDt(v) {
+  if (!v) return '—';
+  return new Date(v).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:false});
+}
+
+function generate() {
+  calcAll();
+
+  const total = n('f-total'), ext = n('f-ext'), rjt = n('f-rjt');
+  const rej = n('f-reject'), cls = n('f-class'), rows = n('f-rows');
+  const top = n('f-top'), side = n('f-side');
+  const diff = fDiff(ext, rjt);
+  const imgDiff = fImgDiff(top, side);
+  const rt = fRuntime(s('f-start'), s('f-end'));
+
+  const st_total  = fTotalStatus(ext, total);
+  const st_reject = fRejectStatus(rej, rjt);
+  const st_diff   = fDiffStatus(diff, cls);
+  const st_rows   = fRowsStatus(total, rows);
+  const st_img    = fImgStatus(imgDiff);
+
+  const statuses = [st_total, st_reject, st_diff, st_rows, st_img];
+  const passN = statuses.filter(x=>x==='PASS').length;
+  const failN = statuses.filter(x=>x==='FAIL').length;
+  const overall = failN > 0 ? 'FAIL' : 'PASS';
+
+  // Header
+  $('o-id').textContent    = s('f-id') || '—';
+  $('o-title').textContent = s('f-title') || '—';
+  $('o-start').textContent = fmtDt(s('f-start'));
+  $('o-end').textContent   = fmtDt(s('f-end'));
+  const rtStr = rt ? (() => { const h=Math.floor(rt),m=Math.round((rt-h)*60); return `${h}:${String(m).padStart(2,'0')} HH:MM`; })() : '—';
+  $('o-rt').textContent = rtStr;
+
+  $('o-banner').className = `overall-banner ${overall.toLowerCase()}`;
+  $('o-banner').textContent = `OVERALL RESULT: ${overall}`;
+  $('o-pass-ct').textContent = passN;
+  $('o-fail-ct').textContent = failN;
+
+  // ── RIS ──
+  const r_total  = remarkTotal(st_total, ext, total);
+  const r_reject = remarkReject(st_reject, rej, rjt);
+  $('t-ris').innerHTML =
+    tRow('Total No. of Items',  total.toLocaleString(),  'D7 = IF(B15−B7=0,"PASS","FAIL")',  st_total,
+         r_total?.body,  r_total?.cls==='ok'?'r-ok':'r-bad') +
+    tRow('Passed Items',  n('f-pass').toLocaleString(),  null,  null,
+         n('f-pass')===0 ? 'All items went through the rejection path — no items passed the quality check.' : `${n('f-pass').toLocaleString()} items met quality criteria and were approved.`, 'r-warn') +
+    tRow('Rejected Items', rej.toLocaleString(), 'D11 = IF(B11−B17=0,"PASS","FAIL")', st_reject,
+         r_reject?.body, r_reject?.cls==='ok'?'r-ok':'r-bad');
+
+  // ── CONTROLLER ──
+  const r_diff = remarkDiff(st_diff, diff, cls);
+  $('t-ctrl').innerHTML =
+    tRow('External Trigger Count', ext.toLocaleString(), 'B15 — raw input from sensor',  null,
+         'Total number of times the external sensor triggered the system.', '') +
+    tRow('Rejection Trigger Count', rjt.toLocaleString(), 'B17 — raw input from controller', null,
+         'Total number of rejection actuator trigger signals sent by the controller.', '') +
+    tRow('Difference', diff.toLocaleString(), 'B19 = B15−B17 | D19 = IF(B19−B25=0,"PASS","FAIL")', st_diff,
+         r_diff?.body, r_diff?.cls==='ok'?'r-ok':'r-bad') +
+    tRow('Class Counts', cls.toLocaleString(), 'B25 — expected tolerance', null,
+         'Acceptable gap between external and rejection trigger counts (tolerance value).', '');
+
+  // ── REPORTS ──
+  const r_rows = remarkRows(st_rows, total, rows);
+  $('t-rpv').innerHTML =
+    tRow('Total No. of Items', total.toLocaleString(), 'B7 — reference from RIS', null, 'Reference value from RIS section.', '') +
+    tRow('Final Report Rows Count', rows.toLocaleString(), 'D23 = IF(B7−B23=0,"PASS","FAIL")', st_rows,
+         r_rows?.body, r_rows?.cls==='ok'?'r-ok':'r-bad') +
+    tRow('Class Counts', cls.toLocaleString(), 'B25 — reference', null, 'Number of distinct product classes in the report.', '');
+
+  // ── IMAGES ──
+  const r_img = remarkImg(st_img, imgDiff, top, side);
+  $('t-img').innerHTML =
+    tRow('Top Images', top.toLocaleString(), 'B29 — camera 1 count', null,
+         'Images captured by the top-facing camera.', '') +
+    tRow('Side Images', side.toLocaleString(), 'B31 — camera 2 count', null,
+         'Images captured by the side-facing camera. Expected = Top × 2 (two side shots per item).', '') +
+    tRow('Difference (Top×2−Side)', imgDiff.toLocaleString(), 'B33 = B29×2−B31 | D33 = IF(B33=0,"PASS","FAIL")', st_img,
+         r_img?.body, r_img?.cls==='ok'?'r-ok':'r-bad');
+
+  const out = $('out');
+  out.classList.add('show');
+  out.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function resetAll() {
+  document.querySelectorAll('input').forEach(i => { if (i.type !== 'datetime-local') i.value = ''; else i.value = ''; });
+  ['c-runtime','c-diff','c-imgdiff'].forEach(id => {
+    $(id).className = 'calc-box';
+    $(id).innerHTML = `<span class="val">—</span><span class="hint">—</span>`;
+  });
+  ['rm-total','rm-reject','rm-diff','rm-rows','rm-img'].forEach(id => {
+    $(id).className = 'remark'; $(id).innerHTML = '';
+  });
+  $('out').classList.remove('show');
+}
+</script>
+</body>
+</html>
