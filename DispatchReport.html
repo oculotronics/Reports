@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Darsh Dispatch Checklist</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<style>
+  :root {
+    --bg:#0d1117;--surface:#161b22;--surface2:#1c2430;--border:#30363d;
+    --accent:#f0a500;--accent2:#e05a00;
+    --good:#238636;--good-bg:#0d2e1a;
+    --moderate:#d29922;--moderate-bg:#2e2009;
+    --bad:#da3633;--bad-bg:#2e0d0d;
+    --text:#e6edf3;--text-muted:#8b949e;
+    --hw:#388bfd;--hw-bg:#0d2245;
+    --elec:#bc8cff;--elec-bg:#1d1035;
+    --soft:#34d2a0;--soft-bg:#0d2e25;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;min-height:100vh;}
+
+  .header{background:linear-gradient(135deg,#0d1117 0%,#1a1400 50%,#0d1117 100%);border-bottom:2px solid var(--accent);padding:28px 40px 20px;position:relative;overflow:hidden;}
+  .header::before{content:'';position:absolute;top:-60px;right:-60px;width:220px;height:220px;background:radial-gradient(circle,rgba(240,165,0,0.12) 0%,transparent 70%);pointer-events:none;}
+  .brand{display:flex;align-items:center;gap:14px;}
+  .brand-icon{width:48px;height:48px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;}
+  .brand-text h1{font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:700;letter-spacing:2px;color:var(--accent);line-height:1;}
+  .brand-text p{font-size:11px;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin-top:3px;}
+  .meta-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-top:22px;padding-top:22px;border-top:1px solid var(--border);}
+  .meta-field{display:flex;flex-direction:column;gap:5px;}
+  .meta-field label{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);font-family:'Rajdhani',sans-serif;font-weight:600;}
+  .meta-field input{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 12px;transition:border-color 0.2s;outline:none;}
+  .meta-field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(240,165,0,0.1);}
+  .meta-field input::placeholder{color:var(--text-muted);}
+
+  .progress-bar-wrap{margin:18px 40px 0;background:var(--surface);border-radius:4px;height:6px;overflow:hidden;border:1px solid var(--border);}
+  .progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:4px;transition:width 0.4s ease;width:0%;}
+  .progress-label{margin:6px 40px 0;font-size:11px;color:var(--text-muted);}
+
+  .filter-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:16px 40px 0;}
+  .filter-btn{font-family:'Rajdhani',sans-serif;font-weight:600;font-size:12px;letter-spacing:1px;text-transform:uppercase;padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text-muted);cursor:pointer;transition:all 0.2s;}
+  .filter-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .filter-btn.active{background:var(--accent);color:#000;border-color:var(--accent);}
+  .filter-search{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;padding:6px 12px;outline:none;min-width:180px;transition:border-color 0.2s;}
+  .filter-search:focus{border-color:var(--accent);}
+  .filter-search::placeholder{color:var(--text-muted);}
+  .filter-label{font-size:11px;color:var(--text-muted);font-family:'Rajdhani',sans-serif;letter-spacing:1px;text-transform:uppercase;}
+
+  .table-wrap{padding:16px 40px 8px;overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;}
+  thead tr{background:var(--surface2);border-bottom:2px solid var(--accent);}
+  thead th{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);padding:12px 14px;text-align:left;white-space:nowrap;}
+  tbody tr{border-bottom:1px solid var(--border);transition:background 0.15s;}
+  tbody tr.data-row:hover{background:rgba(240,165,0,0.03);}
+
+  tr.section-hw td{background:var(--hw-bg);color:var(--hw);font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;letter-spacing:1px;text-transform:uppercase;padding:9px 14px;border-left:3px solid var(--hw);}
+  tr.section-elec td{background:var(--elec-bg);color:var(--elec);font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;letter-spacing:1px;text-transform:uppercase;padding:9px 14px;border-left:3px solid var(--elec);}
+  tr.section-soft td{background:var(--soft-bg);color:var(--soft);font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;letter-spacing:1px;text-transform:uppercase;padding:9px 14px;border-left:3px solid var(--soft);}
+  tr.module-row td{padding:5px 14px 3px 24px;font-size:11px;color:var(--text-muted);font-style:italic;}
+
+  td{padding:8px 10px;vertical-align:middle;}
+  td.num-cell{color:var(--text-muted);font-size:11px;padding-left:14px;white-space:nowrap;min-width:36px;}
+  td.part-name{color:var(--text);padding-left:18px;}
+
+  select.installed-sel,select.perf-sel{-webkit-appearance:none;appearance:none;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 28px 5px 10px;cursor:pointer;outline:none;transition:all 0.2s;background-repeat:no-repeat;background-position:right 8px center;background-size:10px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238b949e'/%3E%3C/svg%3E");min-width:90px;border:1px solid var(--border);background-color:var(--surface2);color:var(--text-muted);}
+  select.installed-sel:focus,select.perf-sel:focus{border-color:var(--accent);}
+  select.i-yes{background-color:var(--good-bg)!important;color:#3fb950!important;border-color:var(--good)!important;}
+  select.i-no{background-color:var(--bad-bg)!important;color:#f85149!important;border-color:var(--bad)!important;}
+  select.p-good{background-color:var(--good-bg)!important;color:#3fb950!important;border-color:var(--good)!important;}
+  select.p-moderate{background-color:var(--moderate-bg)!important;color:#e3b341!important;border-color:var(--moderate)!important;}
+  select.p-bad{background-color:var(--bad-bg)!important;color:#f85149!important;border-color:var(--bad)!important;}
+
+  input.remarks-input{background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 10px;width:100%;min-width:140px;outline:none;transition:border-color 0.2s;}
+  input.remarks-input:focus{border-color:var(--accent);}
+
+  .del-btn{background:transparent;border:1px solid transparent;color:transparent;width:26px;height:26px;border-radius:5px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all 0.2s;}
+  tr.data-row:hover .del-btn{color:var(--text-muted);border-color:var(--border);}
+  .del-btn:hover{border-color:var(--bad)!important;color:var(--bad)!important;background:var(--bad-bg)!important;}
+
+  .custom-tag{display:inline-block;padding:1px 6px;border-radius:3px;font-size:10px;font-family:'Rajdhani',sans-serif;font-weight:700;background:rgba(240,165,0,0.15);color:var(--accent);border:1px solid rgba(240,165,0,0.3);margin-left:5px;vertical-align:middle;letter-spacing:0.5px;}
+
+  /* ADD PANEL */
+  .add-panel{margin:4px 40px 4px;background:var(--surface);border:1px dashed #2d3748;border-radius:10px;overflow:hidden;}
+  .add-toggle{display:flex;align-items:center;gap:10px;padding:11px 18px;cursor:pointer;border:none;background:transparent;color:var(--accent);font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;letter-spacing:1px;text-transform:uppercase;width:100%;transition:background 0.2s;}
+  .add-toggle:hover{background:rgba(240,165,0,0.04);}
+  .add-toggle .arr{font-size:10px;transition:transform 0.25s;}
+  .add-toggle.open .arr{transform:rotate(90deg);}
+  .add-form{display:none;padding:14px 18px 16px;border-top:1px solid var(--border);gap:12px;flex-wrap:wrap;align-items:flex-end;}
+  .add-form.show{display:flex;}
+  .add-form .f{display:flex;flex-direction:column;gap:5px;flex:1;min-width:140px;}
+  .add-form .f label{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);font-family:'Rajdhani',sans-serif;font-weight:600;}
+  .add-form .f input,.add-form .f select{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 12px;outline:none;transition:border-color 0.2s;}
+  .add-form .f input:focus,.add-form .f select:focus{border-color:var(--accent);}
+  .add-form .f input::placeholder{color:var(--text-muted);}
+  .add-form .f select option{background:var(--surface2);}
+  .btn-add{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;letter-spacing:1px;text-transform:uppercase;padding:9px 22px;border-radius:7px;border:none;cursor:pointer;background:linear-gradient(135deg,var(--accent2),var(--accent));color:#000;transition:filter 0.2s;align-self:flex-end;white-space:nowrap;}
+  .btn-add:hover{filter:brightness(1.1);}
+
+  .actions{padding:12px 40px 30px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;}
+  .btn{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:14px;letter-spacing:1px;text-transform:uppercase;padding:11px 24px;border-radius:8px;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all 0.2s;}
+  .btn-report{background:linear-gradient(135deg,var(--accent2),var(--accent));color:#000;}
+  .btn-report:hover{filter:brightness(1.1);transform:translateY(-1px);}
+  .btn-dl{background:transparent;border:1.5px solid var(--accent);color:var(--accent);}
+  .btn-dl:hover{background:rgba(240,165,0,0.08);transform:translateY(-1px);}
+  .btn-reset{background:transparent;border:1.5px solid var(--border);color:var(--text-muted);font-size:12px;padding:10px 18px;}
+  .btn-reset:hover{border-color:var(--text-muted);color:var(--text);}
+
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:100;backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px;}
+  .modal-overlay.open{display:flex;}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;width:100%;max-width:860px;max-height:90vh;overflow-y:auto;}
+  .modal-header{background:linear-gradient(135deg,#1a1400,var(--surface));border-bottom:2px solid var(--accent);padding:20px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;}
+  .modal-header h2{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:20px;letter-spacing:1.5px;color:var(--accent);text-transform:uppercase;}
+  .modal-close{background:transparent;border:1px solid var(--border);color:var(--text-muted);border-radius:6px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;transition:all 0.2s;}
+  .modal-close:hover{border-color:var(--bad);color:var(--bad);}
+  .modal-body{padding:24px 28px;}
+  .report-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px;margin-bottom:20px;padding:14px;background:var(--surface2);border-radius:8px;border:1px solid var(--border);}
+  .rmi{display:flex;flex-direction:column;gap:3px;}
+  .rmi .lbl{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);font-family:'Rajdhani',sans-serif;}
+  .rmi .val{font-size:13px;color:var(--text);font-weight:500;}
+  .report-stats{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;}
+  .sc{flex:1;min-width:110px;padding:12px;border-radius:8px;text-align:center;}
+  .sc .sn{font-family:'Rajdhani',sans-serif;font-size:30px;font-weight:700;line-height:1;}
+  .sc .sl{font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-top:4px;opacity:0.8;}
+  .sg{background:var(--good-bg);border:1px solid var(--good);color:#3fb950;}
+  .so{background:var(--moderate-bg);border:1px solid var(--moderate);color:#e3b341;}
+  .sr{background:var(--bad-bg);border:1px solid var(--bad);color:#f85149;}
+  .sb{background:var(--hw-bg);border:1px solid var(--hw);color:#79c0ff;}
+  .rst{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;padding:10px 0 8px;border-bottom:1px solid var(--border);margin-bottom:10px;color:var(--accent);}
+  .rt{width:100%;border-collapse:collapse;margin-bottom:18px;font-size:12px;}
+  .rt th{background:var(--surface2);color:var(--text-muted);font-size:10px;text-transform:uppercase;letter-spacing:1px;padding:8px 10px;text-align:left;font-family:'Rajdhani',sans-serif;font-weight:600;}
+  .rt td{padding:7px 10px;border-bottom:1px solid var(--border);vertical-align:top;}
+  .rt tr:last-child td{border-bottom:none;}
+  .badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-family:'Rajdhani',sans-serif;font-weight:600;}
+  .bg{background:var(--good-bg);color:#3fb950;border:1px solid var(--good);}
+  .bm{background:var(--moderate-bg);color:#e3b341;border:1px solid var(--moderate);}
+  .bb{background:var(--bad-bg);color:#f85149;border:1px solid var(--bad);}
+  .modal-footer{padding:14px 28px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;position:sticky;bottom:0;background:var(--surface);}
+
+  ::-webkit-scrollbar{width:6px;height:6px;}
+  ::-webkit-scrollbar-track{background:var(--bg);}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+  ::-webkit-scrollbar-thumb:hover{background:var(--accent);}
+  @media(max-width:620px){.header,.table-wrap,.actions,.filter-bar{padding-left:16px;padding-right:16px;}.add-panel{margin-left:16px;margin-right:16px;}.progress-bar-wrap,.progress-label{margin-left:16px;margin-right:16px;}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="brand">
+    <div class="brand-icon">⚙️</div>
+    <div class="brand-text">
+      <h1>DARSH DISPATCH</h1>
+      <p>Installation &amp; Commissioning Checklist</p>
+    </div>
+  </div>
+  <div class="meta-grid">
+    <div class="meta-field"><label>Client Name</label><input type="text" id="client-name" placeholder="Enter client name…"></div>
+    <div class="meta-field"><label>System Model Number</label><input type="text" id="model-number" placeholder="e.g. Darsh-Trio-26007"></div>
+    <div class="meta-field"><label>Verified By</label><input type="text" id="verified-by" placeholder="Engineer / Technician name…"></div>
+    <div class="meta-field"><label>Date</label><input type="date" id="dispatch-date"></div>
+    <div class="meta-field"><label>Location / Site</label><input type="text" id="site-location" placeholder="Installation site…"></div>
+  </div>
+</div>
+
+<div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
+<div class="progress-label" id="progress-label">0 of 0 items filled</div>
+
+<div class="filter-bar">
+  <span class="filter-label">Filter:</span>
+  <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
+  <button class="filter-btn" onclick="setFilter('HardWare',this)">🔩 Hardware</button>
+  <button class="filter-btn" onclick="setFilter('Electrical',this)">⚡ Electrical</button>
+  <button class="filter-btn" onclick="setFilter('Software',this)">💻 Software</button>
+  <button class="filter-btn" onclick="setFilter('Custom',this)">✏️ Custom</button>
+  <input class="filter-search" type="text" id="search-input" placeholder="Search parts…" oninput="applySearch()">
+</div>
+
+<div class="table-wrap">
+  <table id="checklist-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Module</th>
+        <th>Modular Part</th>
+        <th>Installed</th>
+        <th>Performance</th>
+        <th>Remarks</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="checklist-body"></tbody>
+  </table>
+</div>
+
+<div class="add-panel" id="add-panel">
+  <button class="add-toggle" id="add-toggle" onclick="toggleAdd()">
+    <span class="arr">▶</span> ＋ Add New Row
+  </button>
+  <div class="add-form" id="add-form">
+    <div class="f">
+      <label>Type / Section</label>
+      <select id="new-type">
+        <option value="HardWare">🔩 HardWare</option>
+        <option value="Electrical">⚡ Electrical</option>
+        <option value="Software">💻 Software</option>
+        <option value="Custom">✏️ Custom</option>
+      </select>
+    </div>
+    <div class="f">
+      <label>Module Name</label>
+      <input type="text" id="new-module" placeholder="e.g. Conveyor, Panel Box…">
+    </div>
+    <div class="f" style="flex:2;min-width:200px;">
+      <label>Modular Part / Description</label>
+      <input type="text" id="new-part" placeholder="e.g. Motor Belt, Feature Check…" onkeydown="if(event.key==='Enter')addRow()">
+    </div>
+    <button class="btn-add" onclick="addRow()">＋ Add Row</button>
+  </div>
+</div>
+
+<div class="actions">
+  <button class="btn btn-report" onclick="openReport()">📋 Generate Report</button>
+  <button class="btn btn-dl" onclick="downloadPDF()">⬇ Download PDF</button>
+  <button class="btn btn-reset" onclick="clearAll()">↺ Reset</button>
+</div>
+
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>📋 Dispatch Report</h2>
+      <button class="modal-close" onclick="closeReport()">✕</button>
+    </div>
+    <div class="modal-body" id="report-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-dl" onclick="downloadPDF()">⬇ Download PDF</button>
+      <button class="btn btn-reset" onclick="closeReport()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const BASE = [
+  {t:'HardWare',m:'Conveyor',p:'VFD'},
+  {t:'HardWare',m:'Conveyor',p:'Motor'},
+  {t:'HardWare',m:'Conveyor',p:'Motor Shield'},
+  {t:'HardWare',m:'Conveyor',p:'Motor Belt'},
+  {t:'HardWare',m:'Conveyor',p:'Belt Alignments'},
+  {t:'HardWare',m:'Conveyor',p:'Supporting L-Plates'},
+  {t:'HardWare',m:'Conveyor',p:'Conveyor Belt'},
+  {t:'HardWare',m:'Conveyor',p:'Cup Support Bar'},
+  {t:'HardWare',m:'Conveyor',p:'Cup Alignment Bar'},
+  {t:'HardWare',m:'Conveyor',p:'Knife Edge Conveyor Position Lock Mounts'},
+  {t:'HardWare',m:'Top Camera Mount',p:'Fit Check'},
+  {t:'HardWare',m:'Top Camera Mount',p:'Alignment'},
+  {t:'HardWare',m:'Top Camera Mount',p:'Feature Check'},
+  {t:'HardWare',m:'Side Camera1 Mount',p:'Fit Check'},
+  {t:'HardWare',m:'Side Camera1 Mount',p:'Alignment'},
+  {t:'HardWare',m:'Side Camera1 Mount',p:'Feature Check'},
+  {t:'HardWare',m:'Side Camera2 Mount',p:'Fit Check'},
+  {t:'HardWare',m:'Side Camera2 Mount',p:'Alignment'},
+  {t:'HardWare',m:'Side Camera2 Mount',p:'Feature Check'},
+  {t:'HardWare',m:'Sensor Setup',p:'Sensor Plate'},
+  {t:'HardWare',m:'Sensor Setup',p:'Reflector Plate'},
+  {t:'HardWare',m:'Rejection Setup',p:'AirBlow1 Mount'},
+  {t:'HardWare',m:'Rejection Setup',p:'AirBlow2 Mount'},
+  {t:'HardWare',m:'Monitor Setup',p:'Monitor Setup'},
+  {t:'HardWare',m:'Keyboard Setup',p:'Keyboard Setup'},
+  {t:'HardWare',m:'PC and UPS Setup',p:'PC and UPS Setup'},
+  {t:'HardWare',m:'Enclosure Setup',p:'Fit Check'},
+  {t:'HardWare',m:'Enclosure Setup',p:'Washers Verification'},
+  {t:'HardWare',m:'Enclosure Setup',p:'Wheels'},
+  {t:'HardWare',m:'Enclosure Setup',p:'Leveling Pads'},
+  {t:'HardWare',m:'Enclosure Setup',p:'Acrylic Sheets'},
+  {t:'HardWare',m:'Enclosure Setup',p:'Door Setup'},
+  {t:'HardWare',m:'Enclosure Setup',p:'Camera Water Shield'},
+  {t:'HardWare',m:'Enclosure Setup',p:'PC Shield'},
+  {t:'HardWare',m:'Enclosure Setup',p:'Panel Box'},
+  {t:'Electrical',m:'Panel Box',p:'I/O Box'},
+  {t:'Electrical',m:'Panel Box',p:'Motor Driver'},
+  {t:'Electrical',m:'Panel Box',p:'Mains Power'},
+  {t:'Electrical',m:'Panel Box',p:'SMPS Adapters'},
+  {t:'Electrical',m:'Panel Box',p:'Internal Wiring'},
+  {t:'Electrical',m:'Panel Box',p:'PC Cooling Fan'},
+  {t:'Electrical',m:'Panel Box',p:'Heatsinks'},
+  {t:'Electrical',m:'Panel Box',p:'I/O Box Cooling Fan'},
+  {t:'Electrical',m:'Grounding',p:'Panel Box Grounding'},
+  {t:'Electrical',m:'Grounding',p:'Motor Grounding'},
+  {t:'Electrical',m:'Grounding',p:'Enclosure Body Grounding'},
+  {t:'Electrical',m:'Grounding',p:'Grounding Outlet Screw to Enclosure'},
+  {t:'Electrical',m:'Power Inlet from Client',p:'Common Slot – Insert and Power Up System'},
+  {t:'Electrical',m:'VFD Panel',p:'Power Connections'},
+  {t:'Electrical',m:'VFD Panel',p:'Emergency Stop'},
+  {t:'Electrical',m:'VFD Panel',p:'Rotary Switch and Indicators'},
+  {t:'Electrical',m:'AC Power Extension Box',p:'Fit and Locked'},
+  {t:'Electrical',m:'Routing',p:'Top Camera'},
+  {t:'Electrical',m:'Routing',p:'Side Cameras'},
+  {t:'Electrical',m:'Routing',p:'Tower Light'},
+  {t:'Electrical',m:'Routing',p:'Sensor'},
+  {t:'Electrical',m:'Routing',p:'Rejection'},
+  {t:'Electrical',m:'Routing',p:'Monitor'},
+  {t:'Electrical',m:'Routing',p:'VFD Panel'},
+  {t:'Electrical',m:'Routing',p:'Labeling'},
+  {t:'Electrical',m:'I/O Box',p:'Connectors Fit Check'},
+  {t:'Electrical',m:'I/O Box',p:'Internal Routing'},
+  {t:'Electrical',m:'I/O Box',p:'Base Plate Fit Check'},
+  {t:'Electrical',m:'I/O Box',p:'PCB Fit Check'},
+  {t:'Electrical',m:'I/O Box',p:'Pressure Sensor Setup'},
+  {t:'Electrical',m:'I/O Box',p:'Camera Cooling Fans'},
+  {t:'Electrical',m:'Temperature Check',p:'Setup Temperature on Temp Module'},
+  {t:'Electrical',m:'USB Extension',p:'Check Camera USBs Connected to 3.0 USB Ports'},
+  {t:'Software',m:'Version Testing',p:'Version :'},
+  {t:'Software',m:'Calibration',p:'Images Should Display Live'},
+  {t:'Software',m:'Calibration',p:'Exposure Changing'},
+  {t:'Software',m:'Teaching',p:'New Data Collection'},
+  {t:'Software',m:'Teaching',p:'Existing Data Collection'},
+  {t:'Software',m:'Teaching',p:'Data Moving to NAS'},
+  {t:'Software',m:'Inspection',p:'Selection of Models'},
+  {t:'Software',m:'Inspection',p:'Detection'},
+  {t:'Software',m:'Inspection',p:'Air Blow-1 & Air Blow-2 Settings'},
+  {t:'Software',m:'Inspection',p:'Rejection Working'},
+  {t:'Software',m:'Inspection',p:'Pass Criteria Verification'},
+  {t:'Software',m:'Inspection',p:'Good vs Bad Count'},
+  {t:'Software',m:'Inspection',p:'Defects Graph Updating Correctly'},
+  {t:'Software',m:'Inspection',p:'Inspection Data Moving to NAS'},
+  {t:'Software',m:'Inspection',p:'Disconnecting Error Notification'},
+  {t:'Software',m:'Inspection',p:'Tower Light Working'},
+  {t:'Software',m:'Error Handling',p:'Camera Disconnected Notification'},
+  {t:'Software',m:'Error Handling',p:'DAAC Disconnected Notification'},
+  {t:'Software',m:'Error Handling',p:'NAS Not Available Notification'},
+  {t:'Software',m:'License',p:'Trial Version – 45 Days'},
+];
+
+let ROWS = BASE.map((r,i)=>({...r,id:i,custom:false}));
+let nextId = ROWS.length;
+let activeFilter = 'all';
+
+function sectionClass(t){ return t==='HardWare'?'section-hw':t==='Electrical'?'section-elec':'section-soft'; }
+function sectionIcon(t){ return t==='HardWare'?'🔩':t==='Electrical'?'⚡':'💻'; }
+
+function buildTable(){
+  const tbody = document.getElementById('checklist-body');
+  tbody.innerHTML='';
+  let curT='',curM='',num=0;
+  ROWS.forEach(row=>{
+    if(row.t!==curT){
+      curT=row.t; curM='';
+      const tr=document.createElement('tr');
+      tr.className=sectionClass(row.t);
+      tr.dataset.st=row.t;
+      tr.innerHTML=`<td colspan="7">${sectionIcon(row.t)} ${row.t.toUpperCase()}</td>`;
+      tbody.appendChild(tr);
+    }
+    if(row.m!==curM){
+      curM=row.m;
+      if(row.m!==row.p){
+        const tr=document.createElement('tr');
+        tr.className='module-row';
+        tr.dataset.st=row.t;
+        tr.innerHTML=`<td></td><td colspan="6" style="padding:5px 14px 3px 24px;font-size:11px;color:var(--text-muted);font-style:italic;">↳ ${row.m}</td>`;
+        tbody.appendChild(tr);
+      }
+    }
+    num++;
+    const tr=document.createElement('tr');
+    tr.className='data-row';
+    tr.dataset.id=row.id;
+    tr.dataset.st=row.t;
+    tr.innerHTML=`
+      <td class="num-cell">${String(num).padStart(2,'0')}</td>
+      <td style="display:none">${row.m}</td>
+      <td class="part-name">${row.p}${row.custom?'<span class="custom-tag">CUSTOM</span>':''}</td>
+      <td><select class="installed-sel" onchange="onI(this)">
+        <option value="">— Select —</option>
+        <option value="Yes">Yes</option>
+        <option value="No">No</option>
+      </select></td>
+      <td><select class="perf-sel" onchange="onP(this)">
+        <option value="">— Select —</option>
+        <option value="Good">Good</option>
+        <option value="Moderate">Moderate</option>
+        <option value="Bad">Bad</option>
+      </select></td>
+      <td><input type="text" class="remarks-input" placeholder="Remarks…" oninput="prog()"></td>
+      <td style="width:34px;">${row.custom?`<button class="del-btn" title="Delete" onclick="delRow(${row.id})">✕</button>`:'<div style="width:26px;"></div>'}</td>`;
+    tbody.appendChild(tr);
+  });
+  prog();
+  applyFilter(activeFilter);
+}
+
+function onI(s){
+  s.className='installed-sel';
+  if(s.value==='Yes')s.classList.add('i-yes');
+  else if(s.value==='No')s.classList.add('i-no');
+  prog();
+}
+function onP(s){
+  s.className='perf-sel';
+  if(s.value==='Good')s.classList.add('p-good');
+  else if(s.value==='Moderate')s.classList.add('p-moderate');
+  else if(s.value==='Bad')s.classList.add('p-bad');
+  prog();
+}
+
+function prog(){
+  const sels=[...document.querySelectorAll('select.installed-sel')];
+  const filled=sels.filter(s=>s.value!=='').length;
+  const pct=sels.length?Math.round(filled/sels.length*100):0;
+  document.getElementById('progress-fill').style.width=pct+'%';
+  document.getElementById('progress-label').textContent=`${filled} of ${sels.length} items filled (${pct}% complete)`;
+}
+
+function setFilter(type,btn){
+  activeFilter=type;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  applyFilter(type);
+}
+function applySearch(){ applyFilter(activeFilter); }
+function applyFilter(type){
+  const search=(document.getElementById('search-input').value||'').toLowerCase();
+  document.querySelectorAll('#checklist-body tr').forEach(tr=>{
+    const st=tr.dataset.st||'';
+    const text=tr.innerText.toLowerCase();
+    const tm=type==='all'||st===type;
+    const sm=!search||text.includes(search);
+    tr.style.display=(tm&&sm)?'':'none';
+  });
+}
+
+function toggleAdd(){
+  const f=document.getElementById('add-form');
+  const b=document.getElementById('add-toggle');
+  const open=f.classList.contains('show');
+  f.classList.toggle('show',!open);
+  b.classList.toggle('open',!open);
+  if(!open) document.getElementById('new-part').focus();
+}
+
+function addRow(){
+  const type=document.getElementById('new-type').value;
+  const module=(document.getElementById('new-module').value.trim())||'Custom';
+  const part=document.getElementById('new-part').value.trim();
+  if(!part){document.getElementById('new-part').style.borderColor='var(--bad)';setTimeout(()=>document.getElementById('new-part').style.borderColor='',1200);return;}
+  ROWS.push({id:nextId,t:type,m:module,p:part,custom:true});
+  nextId++;
+  document.getElementById('new-module').value='';
+  document.getElementById('new-part').value='';
+  buildTable();
+  setTimeout(()=>{
+    const el=document.querySelector(`tr[data-id="${nextId-1}"]`);
+    if(el)el.scrollIntoView({behavior:'smooth',block:'center'});
+  },100);
+}
+
+function delRow(id){
+  ROWS=ROWS.filter(r=>r.id!==id);
+  buildTable();
+}
+
+function collectData(){
+  return [...document.querySelectorAll('#checklist-body tr.data-row')].map(tr=>{
+    const id=parseInt(tr.dataset.id);
+    const row=ROWS.find(r=>r.id===id)||{};
+    return {
+      type:row.t,module:row.m,part:row.p,custom:row.custom||false,
+      installed:tr.querySelector('.installed-sel').value,
+      performance:tr.querySelector('.perf-sel').value,
+      remarks:tr.querySelector('.remarks-input').value.trim(),
+    };
+  });
+}
+
+function openReport(){
+  const data=collectData();
+  const cn=document.getElementById('client-name').value||'—';
+  const mn=document.getElementById('model-number').value||'—';
+  const vb=document.getElementById('verified-by').value||'—';
+  const dt=document.getElementById('dispatch-date').value||'—';
+  const sl=document.getElementById('site-location').value||'—';
+  const comp=data.filter(r=>r.installed==='Yes');
+  const noinst=data.filter(r=>r.installed==='No');
+  const attn=data.filter(r=>r.performance==='Bad'||r.performance==='Moderate');
+
+  const notChecked=data.filter(r=>r.installed==='');
+  const mkBadge=v=>v?`<span class="badge ${v==='Good'?'bg':v==='Moderate'?'bm':'bb'}">${v}</span>`:'—';
+  const mkInstBadge=v=>v==='Yes'?`<span class="badge bg">Yes</span>`:v==='No'?`<span class="badge bb">No</span>`:`<span class="badge" style="background:var(--surface2);color:var(--text-muted);border:1px solid var(--border)">—</span>`;
+  const mkRows=(rows,showPerf,showInst)=>rows.map((r,i)=>`<tr>
+    <td style="color:var(--text-muted)">${i+1}</td>
+    <td>${r.type}</td><td>${r.module}</td>
+    <td>${r.part}${r.custom?'<span class="custom-tag">CUSTOM</span>':''}</td>
+    ${showInst?`<td>${mkInstBadge(r.installed)}</td>`:''}
+    ${showPerf?`<td>${mkBadge(r.performance)}</td>`:''}
+    <td>${r.remarks||'—'}</td></tr>`).join('');
+  const mkTable=(rows,showPerf,showInst)=>`<table class="rt">
+    <thead><tr><th>#</th><th>Type</th><th>Module</th><th>Part</th>${showInst?'<th>Installed</th>':''}${showPerf?'<th>Performance</th>':''}<th>Remarks</th></tr></thead>
+    <tbody>${mkRows(rows,showPerf,showInst)}</tbody></table>`;
+
+  // Overall summary: all items grouped by type
+  const allByType={};
+  data.forEach(r=>{if(!allByType[r.type])allByType[r.type]=[];allByType[r.type].push(r);});
+  let overallRows='';
+  Object.keys(allByType).forEach(type=>{
+    const sc_={HardWare:'var(--hw)',Electrical:'var(--elec)',Software:'var(--soft)',Custom:'var(--accent)'}[type]||'var(--accent)';
+    const items=allByType[type];
+    const inst=items.filter(r=>r.installed==='Yes').length;
+    const notInst=items.filter(r=>r.installed==='No').length;
+    const pending=items.filter(r=>r.installed==='').length;
+    const issues=items.filter(r=>r.performance==='Bad'||r.performance==='Moderate').length;
+    overallRows+=`<tr>
+      <td style="color:${sc_};font-weight:700;">${type}</td>
+      <td style="text-align:center">${items.length}</td>
+      <td style="text-align:center;color:#3fb950;font-weight:600">${inst}</td>
+      <td style="text-align:center;color:#f85149;font-weight:600">${notInst}</td>
+      <td style="text-align:center;color:var(--text-muted);font-weight:600">${pending}</td>
+      <td style="text-align:center;color:#e3b341;font-weight:600">${issues}</td>
+    </tr>`;
+  });
+  const overallTable=`<table class="rt">
+    <thead><tr><th>Section</th><th style="text-align:center">Total</th><th style="text-align:center">✅ Installed</th><th style="text-align:center">🚫 Not Installed</th><th style="text-align:center">⏳ Not Checked</th><th style="text-align:center">⚠️ Issues</th></tr></thead>
+    <tbody>${overallRows}</tbody></table>`;
+
+  let html=`<div class="report-meta">
+    <div class="rmi"><span class="lbl">Client</span><span class="val">${cn}</span></div>
+    <div class="rmi"><span class="lbl">Model No.</span><span class="val">${mn}</span></div>
+    <div class="rmi"><span class="lbl">Verified By</span><span class="val">${vb}</span></div>
+    <div class="rmi"><span class="lbl">Date</span><span class="val">${dt}</span></div>
+    <div class="rmi"><span class="lbl">Site</span><span class="val">${sl}</span></div>
+  </div>
+  <div class="report-stats">
+    <div class="sc sb"><div class="sn">${data.length}</div><div class="sl">Total Items</div></div>
+    <div class="sc sg"><div class="sn">${comp.length}</div><div class="sl">Installed</div></div>
+    <div class="sc sr"><div class="sn">${noinst.length}</div><div class="sl">Not Installed</div></div>
+    <div class="sc so"><div class="sn">${attn.length}</div><div class="sl">Needs Attention</div></div>
+    <div class="sc" style="background:var(--surface2);border:1px solid var(--border);color:var(--text-muted)"><div class="sn">${notChecked.length}</div><div class="sl">Not Checked</div></div>
+  </div>`;
+
+  html+=`<div class="rst">📊 Overall Summary by Section</div>${overallTable}`;
+  if(comp.length){html+=`<div class="rst">✅ Installed Items (${comp.length})</div>${mkTable(comp,true,false)}`;}
+  if(noinst.length){html+=`<div class="rst">🚫 Not Installed (${noinst.length})</div>${mkTable(noinst,false,false)}`;}
+  if(attn.length){html+=`<div class="rst">⚠️ Performance Issues – Moderate &amp; Bad (${attn.length})</div>${mkTable(attn,true,false)}`;}
+  if(notChecked.length){html+=`<div class="rst">⏳ Not Checked / Pending (${notChecked.length})</div>${mkTable(notChecked,false,false)}`;}
+  if(!comp.length&&!noinst.length&&!attn.length&&!notChecked.length){html+=`<p style="color:var(--text-muted);text-align:center;padding:40px 0;">No data filled yet.</p>`;}
+
+  document.getElementById('report-body').innerHTML=html;
+  document.getElementById('modal').classList.add('open');
+}
+function closeReport(){document.getElementById('modal').classList.remove('open');}
+document.getElementById('modal').addEventListener('click',function(e){if(e.target===this)closeReport();});
+
+function downloadPDF(){
+  closeReport();
+
+  // Show loading indicator
+  let loadingDiv=document.createElement('div');
+  loadingDiv.style.cssText='position:fixed;inset:0;background:rgba(13,17,23,0.85);z-index:99998;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#f0a500;font-family:Rajdhani,sans-serif;font-size:18px;letter-spacing:2px;gap:16px;';
+  loadingDiv.innerHTML='<div style="border:3px solid #30363d;border-top:3px solid #f0a500;border-radius:50%;width:44px;height:44px;animation:spin 0.8s linear infinite;"></div><div>GENERATING PDF…</div><style>@keyframes spin{to{transform:rotate(360deg)}}</style>';
+  document.body.appendChild(loadingDiv);
+
+  setTimeout(function(){
+    try{
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation:'landscape', unit:'mm', format:'a4' });
+      const data = collectData();
+      const cn = document.getElementById('client-name').value||'—';
+      const mn = document.getElementById('model-number').value||'Checklist';
+      const vb = document.getElementById('verified-by').value||'—';
+      const dt = document.getElementById('dispatch-date').value||new Date().toLocaleDateString();
+      const sl = document.getElementById('site-location').value||'—';
+
+      const GOLD=[240,165,0], WHITE=[255,255,255], DARK=[36,41,46];
+      const GREEN=[34,134,58], RED=[203,36,49], ORANGE=[176,136,0], GREY=[100,110,120];
+      const BG_GREEN=[230,255,237], BG_RED=[255,238,240], BG_ORANGE=[255,253,239], BG_GREY=[246,248,250], BG_BLUE=[221,244,255];
+      const BLUE=[56,139,253];
+
+      // ── Header bar ──
+      doc.setFillColor(...GOLD);
+      doc.rect(0,0,297,14,'F');
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(14);
+      doc.setTextColor(...DARK);
+      doc.text('DARSH DISPATCH CHECKLIST',10,9);
+      doc.setFontSize(8);
+      doc.setFont('helvetica','normal');
+      doc.text('Installation & Commissioning Report',10,13);
+      doc.setTextColor(100,110,120);
+      doc.text('Generated: '+new Date().toLocaleString(),287,9,{align:'right'});
+
+      // ── Meta info box ──
+      let y=18;
+      doc.setFillColor(246,248,250);
+      doc.roundedRect(8,y,281,16,2,2,'F');
+      doc.setDrawColor(220,225,230);
+      doc.roundedRect(8,y,281,16,2,2,'S');
+      doc.setFontSize(8);
+      doc.setFont('helvetica','bold'); doc.setTextColor(...DARK);
+      doc.text('Client:',10,y+5); doc.setFont('helvetica','normal'); doc.text(cn,25,y+5);
+      doc.setFont('helvetica','bold'); doc.text('Model No:',75,y+5); doc.setFont('helvetica','normal'); doc.text(mn,96,y+5);
+      doc.setFont('helvetica','bold'); doc.text('Verified By:',145,y+5); doc.setFont('helvetica','normal'); doc.text(vb,166,y+5);
+      doc.setFont('helvetica','bold'); doc.text('Date:',10,y+12); doc.setFont('helvetica','normal'); doc.text(dt,22,y+12);
+      doc.setFont('helvetica','bold'); doc.text('Site:',75,y+12); doc.setFont('helvetica','normal'); doc.text(sl,85,y+12);
+      doc.setFont('helvetica','bold'); doc.text('Total Items:',145,y+12); doc.setFont('helvetica','normal'); doc.text(String(data.length),166,y+12);
+
+      // ── Summary stats ──
+      y+=20;
+      const comp=data.filter(r=>r.installed==='Yes');
+      const noinst=data.filter(r=>r.installed==='No');
+      const attn=data.filter(r=>r.performance==='Bad'||r.performance==='Moderate');
+      const notChecked=data.filter(r=>r.installed==='');
+      const statBoxes=[
+        {label:'Installed',count:comp.length,bg:BG_GREEN,fg:GREEN,border:GREEN},
+        {label:'Not Installed',count:noinst.length,bg:BG_RED,fg:RED,border:RED},
+        {label:'Needs Attention',count:attn.length,bg:BG_ORANGE,fg:ORANGE,border:ORANGE},
+        {label:'Not Checked',count:notChecked.length,bg:BG_GREY,fg:GREY,border:GREY},
+        {label:'Total',count:data.length,bg:BG_BLUE,fg:BLUE,border:BLUE},
+      ];
+      const bw=52, gap=3.25, bh=14;
+      statBoxes.forEach((b,i)=>{
+        const x=8+i*(bw+gap);
+        doc.setFillColor(...b.bg); doc.roundedRect(x,y,bw,bh,2,2,'F');
+        doc.setDrawColor(...b.border); doc.roundedRect(x,y,bw,bh,2,2,'S');
+        doc.setFont('helvetica','bold'); doc.setFontSize(16); doc.setTextColor(...b.fg);
+        doc.text(String(b.count),x+bw/2,y+8,{align:'center'});
+        doc.setFontSize(7); doc.setFont('helvetica','normal');
+        doc.text(b.label.toUpperCase(),x+bw/2,y+12,{align:'center'});
+      });
+
+      // ── Section summary table ──
+      y+=18;
+      doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...GOLD);
+      doc.text('SECTION SUMMARY',8,y); y+=1;
+      doc.setDrawColor(...GOLD); doc.line(8,y,289,y); y+=3;
+      const types={};
+      data.forEach(r=>{if(!types[r.type])types[r.type]=[];types[r.type].push(r);});
+      const typeColors={HardWare:[56,139,253],Electrical:[188,140,255],Software:[52,210,160],Custom:[240,165,0]};
+      const summBody=Object.keys(types).map(type=>{
+        const items=types[type];
+        return [
+          type,
+          String(items.length),
+          String(items.filter(r=>r.installed==='Yes').length),
+          String(items.filter(r=>r.installed==='No').length),
+          String(items.filter(r=>r.installed==='').length),
+          String(items.filter(r=>r.performance==='Bad'||r.performance==='Moderate').length)
+        ];
+      });
+      doc.autoTable({
+        startY:y,
+        head:[['Section','Total','Installed','Not Installed','Not Checked','Issues']],
+        body:summBody,
+        margin:{left:8,right:8},
+        styles:{fontSize:8,cellPadding:3},
+        headStyles:{fillColor:GOLD,textColor:DARK,fontStyle:'bold'},
+        columnStyles:{
+          0:{fontStyle:'bold'},
+          1:{halign:'center'},2:{halign:'center',textColor:GREEN},
+          3:{halign:'center',textColor:RED},4:{halign:'center',textColor:GREY},
+          5:{halign:'center',textColor:ORANGE}
+        },
+        didParseCell:function(d){
+          if(d.section==='body'&&d.column.index===0){
+            const tc=typeColors[d.cell.raw];
+            if(tc)d.cell.styles.textColor=tc;
+          }
+        }
+      });
+
+      // ── Checklist details table ──
+      y=doc.lastAutoTable.finalY+6;
+      doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...GOLD);
+      doc.text('CHECKLIST DETAILS',8,y); y+=1;
+      doc.setDrawColor(...GOLD); doc.line(8,y,289,y); y+=3;
+      const detailBody=[];
+      let rowNum=0;
+      data.forEach(r=>{
+        rowNum++;
+        detailBody.push([
+          String(rowNum),
+          r.type,
+          r.module,
+          r.part+(r.custom?' *':''),
+          r.installed||'—',
+          r.performance||'—',
+          r.remarks||''
+        ]);
+      });
+      doc.autoTable({
+        startY:y,
+        head:[['#','Type','Module','Part / Description','Installed','Performance','Remarks']],
+        body:detailBody,
+        margin:{left:8,right:8},
+        styles:{fontSize:7.5,cellPadding:2.5,overflow:'linebreak'},
+        headStyles:{fillColor:GOLD,textColor:DARK,fontStyle:'bold'},
+        columnStyles:{
+          0:{cellWidth:8,halign:'center',textColor:GREY},
+          1:{cellWidth:22},2:{cellWidth:38},3:{cellWidth:68},
+          4:{cellWidth:20,halign:'center'},5:{cellWidth:24,halign:'center'},6:{cellWidth:'auto'}
+        },
+        didParseCell:function(d){
+          if(d.section==='body'){
+            if(d.column.index===1){const tc=typeColors[d.cell.raw];if(tc){d.cell.styles.textColor=tc;d.cell.styles.fontStyle='bold';}}
+            if(d.column.index===4){if(d.cell.raw==='Yes'){d.cell.styles.textColor=GREEN;d.cell.styles.fontStyle='bold';}else if(d.cell.raw==='No'){d.cell.styles.textColor=RED;d.cell.styles.fontStyle='bold';}}
+            if(d.column.index===5){if(d.cell.raw==='Good'){d.cell.styles.textColor=GREEN;d.cell.styles.fontStyle='bold';}else if(d.cell.raw==='Moderate'){d.cell.styles.textColor=ORANGE;d.cell.styles.fontStyle='bold';}else if(d.cell.raw==='Bad'){d.cell.styles.textColor=RED;d.cell.styles.fontStyle='bold';}}
+          }
+        },
+        didDrawRow:function(d){
+          // Add section header rows when type changes
+        }
+      });
+
+      // ── Footer on each page ──
+      const pageCount=doc.internal.getNumberOfPages();
+      for(let i=1;i<=pageCount;i++){
+        doc.setPage(i);
+        doc.setFillColor(246,248,250);
+        doc.rect(0,200,297,10,'F');
+        doc.setDrawColor(220,225,230);
+        doc.line(0,200,297,200);
+        doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(120,130,140);
+        doc.text('* = Custom Added Row     Darsh Dispatch Checklist — '+mn,10,205);
+        doc.text('Page '+i+' of '+pageCount,287,205,{align:'right'});
+      }
+
+      const filename='Darsh_Dispatch_'+(mn.replace(/[^a-z0-9]/gi,'_'))+'_'+dt.replace(/[^a-z0-9]/gi,'_')+'.pdf';
+      doc.save(filename);
+    }catch(err){
+      alert('PDF generation failed: '+err.message);
+      console.error(err);
+    }
+    document.body.removeChild(loadingDiv);
+  }, 80);
+}
+
+function clearAll(){
+  if(!confirm('Reset all entries? Custom rows will also be removed.'))return;
+  ROWS=BASE.map((r,i)=>({...r,id:i,custom:false}));
+  nextId=ROWS.length;
+  localStorage.removeItem('darsh_dispatch_state');
+  buildTable();
+}
+
+/* ── LocalStorage Cache ── */
+const CACHE_KEY='darsh_dispatch_state';
+
+function saveState(){
+  try{
+    const rowData=[...document.querySelectorAll('#checklist-body tr.data-row')].map(tr=>({
+      id:tr.dataset.id,
+      installed:tr.querySelector('.installed-sel').value,
+      performance:tr.querySelector('.perf-sel').value,
+      remarks:tr.querySelector('.remarks-input').value
+    }));
+    const meta={
+      clientName:document.getElementById('client-name').value,
+      modelNumber:document.getElementById('model-number').value,
+      verifiedBy:document.getElementById('verified-by').value,
+      dispatchDate:document.getElementById('dispatch-date').value,
+      siteLocation:document.getElementById('site-location').value
+    };
+    const customRows=ROWS.filter(r=>r.custom);
+    localStorage.setItem(CACHE_KEY,JSON.stringify({meta,rowData,customRows,nextId,savedAt:Date.now()}));
+    showSaveToast();
+  }catch(e){console.warn('Save failed',e);}
+}
+
+function loadState(){
+  try{
+    const raw=localStorage.getItem(CACHE_KEY);
+    if(!raw)return false;
+    const state=JSON.parse(raw);
+    if(state.meta){
+      document.getElementById('client-name').value=state.meta.clientName||'';
+      document.getElementById('model-number').value=state.meta.modelNumber||'';
+      document.getElementById('verified-by').value=state.meta.verifiedBy||'';
+      if(state.meta.dispatchDate)document.getElementById('dispatch-date').value=state.meta.dispatchDate;
+      document.getElementById('site-location').value=state.meta.siteLocation||'';
+    }
+    if(state.customRows&&state.customRows.length){
+      state.customRows.forEach(cr=>{
+        if(!ROWS.find(r=>r.id===parseInt(cr.id)))ROWS.push({...cr,id:parseInt(cr.id),custom:true});
+      });
+      if(state.nextId)nextId=state.nextId;
+    }
+    buildTable();
+    if(state.rowData){
+      state.rowData.forEach(rd=>{
+        const tr=document.querySelector('#checklist-body tr.data-row[data-id="'+rd.id+'"]');
+        if(!tr)return;
+        const iSel=tr.querySelector('.installed-sel');
+        const pSel=tr.querySelector('.perf-sel');
+        const rem=tr.querySelector('.remarks-input');
+        if(iSel){iSel.value=rd.installed||'';onI(iSel);}
+        if(pSel){pSel.value=rd.performance||'';onP(pSel);}
+        if(rem)rem.value=rd.remarks||'';
+      });
+    }
+    prog();
+    const d=new Date(state.savedAt);
+    showSaveToast('Restored from '+d.toLocaleDateString()+' '+d.toLocaleTimeString());
+    return true;
+  }catch(e){console.warn('Load failed',e);return false;}
+}
+
+function showSaveToast(msg){
+  let t=document.getElementById('save-toast');
+  if(!t){
+    t=document.createElement('div');t.id='save-toast';
+    t.style.cssText='position:fixed;bottom:28px;right:28px;background:#1c2430;border:1px solid var(--accent);color:var(--accent);font-family:Rajdhani,sans-serif;font-weight:600;font-size:12px;letter-spacing:1px;padding:10px 18px;border-radius:8px;z-index:9999;transition:opacity 0.4s;opacity:0;pointer-events:none;display:flex;align-items:center;gap:8px;';
+    document.body.appendChild(t);
+  }
+  t.innerHTML='&#x1F4BE; '+(msg||'Progress saved');
+  t.style.opacity='1';
+  clearTimeout(t._to);
+  t._to=setTimeout(()=>{t.style.opacity='0';},2400);
+}
+
+let _saveTimer=null;
+function debounceSave(){clearTimeout(_saveTimer);_saveTimer=setTimeout(saveState,700);}
+document.addEventListener('change',function(e){if(e.target.closest('#checklist-body')||e.target.closest('.header'))debounceSave();});
+document.addEventListener('input',function(e){if(e.target.closest('#checklist-body')||e.target.closest('.header'))debounceSave();});
+
+const _restored=loadState();
+if(!_restored){
+  document.getElementById('dispatch-date').valueAsDate=new Date();
+  buildTable();
+}
+</script>
+</body>
+</html>
