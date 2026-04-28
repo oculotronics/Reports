@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Darsh · Software Test Cases</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0d1117;--surface:#161b22;--s2:#1c2430;--border:#30363d;
+  --acc:#f0a500;--acc2:#e05a00;
+  --good:#238636;--good-bg:#0d2e1a;--good-t:#3fb950;
+  --mod:#d29922;--mod-bg:#2e2009;--mod-t:#e3b341;
+  --bad:#da3633;--bad-bg:#2e0d0d;--bad-t:#f85149;
+  --text:#e6edf3;--muted:#8b949e;--soft:#34d2a0;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;min-height:100vh;}
+
+/* HEADER */
+.hd{background:linear-gradient(135deg,#0d1117 0%,#1a1400 60%,#0d1117 100%);border-bottom:2px solid var(--acc);padding:24px 36px 18px;position:relative;overflow:hidden;}
+.hd::after{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;background:radial-gradient(circle,rgba(240,165,0,.11) 0%,transparent 70%);pointer-events:none;}
+.brand{display:flex;align-items:center;gap:12px;}
+.icon{width:44px;height:44px;background:linear-gradient(135deg,var(--acc2),var(--acc));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.brand h1{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;letter-spacing:2px;color:var(--acc);line-height:1;}
+.brand p{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-top:2px;}
+.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-top:18px;padding-top:16px;border-top:1px solid var(--border);}
+.mf{display:flex;flex-direction:column;gap:4px;}
+.mf label{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-family:'Rajdhani',sans-serif;font-weight:600;}
+.mf input{background:var(--s2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 11px;outline:none;transition:border-color .2s;}
+.mf input:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(240,165,0,.08);}
+.mf input::placeholder{color:var(--muted);}
+
+/* PROGRESS */
+.prog-wrap{margin:14px 36px 0;background:var(--surface);border-radius:4px;height:5px;overflow:hidden;border:1px solid var(--border);}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--acc2),var(--acc));border-radius:4px;transition:width .4s ease;width:0%;}
+.prog-lbl{margin:5px 36px 0;font-size:11px;color:var(--muted);}
+
+/* TOOLBAR */
+.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:14px 36px 0;}
+.filter-btn{font-family:'Rajdhani',sans-serif;font-weight:600;font-size:11px;letter-spacing:1px;text-transform:uppercase;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all .2s;}
+.filter-btn:hover{border-color:var(--acc);color:var(--acc);}
+.filter-btn.active{background:var(--acc);color:#000;border-color:var(--acc);}
+.search{background:var(--s2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;padding:5px 11px;outline:none;min-width:160px;transition:border-color .2s;}
+.search:focus{border-color:var(--acc);}
+.search::placeholder{color:var(--muted);}
+
+/* TABLE */
+.tw{padding:14px 36px 6px;overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+thead tr{background:var(--s2);border-bottom:2px solid var(--acc);}
+thead th{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--acc);padding:11px 12px;text-align:left;white-space:nowrap;}
+tbody tr.dr{border-bottom:1px solid var(--border);transition:background .15s;}
+tbody tr.dr:hover{background:rgba(240,165,0,.03);}
+tr.sec-row td{background:#0d2e25;color:var(--soft);font-family:'Rajdhani',sans-serif;font-weight:700;font-size:12px;letter-spacing:1px;text-transform:uppercase;padding:8px 12px;border-left:3px solid var(--soft);}
+tr.mod-row td{padding:4px 12px 3px 22px;font-size:11px;color:var(--muted);font-style:italic;}
+
+td{padding:7px 9px;vertical-align:middle;}
+td.nc{color:var(--muted);font-size:11px;padding-left:12px;white-space:nowrap;min-width:32px;}
+td.pn{color:var(--text);padding-left:16px;}
+
+select.is,select.ps{-webkit-appearance:none;appearance:none;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:11px;padding:4px 26px 4px 9px;cursor:pointer;outline:none;transition:all .2s;background-repeat:no-repeat;background-position:right 7px center;background-size:9px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238b949e'/%3E%3C/svg%3E");min-width:82px;border:1px solid var(--border);background-color:var(--s2);color:var(--muted);}
+select.is:focus,select.ps:focus{border-color:var(--acc);}
+select.i-y{background-color:var(--good-bg)!important;color:var(--good-t)!important;border-color:var(--good)!important;}
+select.i-n{background-color:var(--bad-bg)!important;color:var(--bad-t)!important;border-color:var(--bad)!important;}
+select.p-g{background-color:var(--good-bg)!important;color:var(--good-t)!important;border-color:var(--good)!important;}
+select.p-m{background-color:var(--mod-bg)!important;color:var(--mod-t)!important;border-color:var(--mod)!important;}
+select.p-b{background-color:var(--bad-bg)!important;color:var(--bad-t)!important;border-color:var(--bad)!important;}
+
+input.rem{background:var(--s2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:12px;padding:4px 9px;width:100%;min-width:120px;outline:none;transition:border-color .2s;}
+input.rem:focus{border-color:var(--acc);}
+.del{background:transparent;border:1px solid transparent;color:transparent;width:24px;height:24px;border-radius:5px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+tr.dr:hover .del{color:var(--muted);border-color:var(--border);}
+.del:hover{border-color:var(--bad)!important;color:var(--bad)!important;background:var(--bad-bg)!important;}
+.cust-tag{display:inline-block;padding:1px 5px;border-radius:3px;font-size:9px;font-family:'Rajdhani',sans-serif;font-weight:700;background:rgba(240,165,0,.15);color:var(--acc);border:1px solid rgba(240,165,0,.3);margin-left:4px;vertical-align:middle;}
+
+/* ADD PANEL */
+.add-panel{margin:4px 36px;background:var(--surface);border:1px dashed #2d3748;border-radius:10px;overflow:hidden;}
+.add-toggle{display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;border:none;background:transparent;color:var(--acc);font-family:'Rajdhani',sans-serif;font-weight:700;font-size:12px;letter-spacing:1px;text-transform:uppercase;width:100%;transition:background .2s;}
+.add-toggle:hover{background:rgba(240,165,0,.04);}
+.arr{font-size:9px;transition:transform .25s;}
+.add-toggle.open .arr{transform:rotate(90deg);}
+.add-form{display:none;padding:12px 16px 14px;border-top:1px solid var(--border);gap:10px;flex-wrap:wrap;align-items:flex-end;}
+.add-form.show{display:flex;}
+.f{display:flex;flex-direction:column;gap:4px;flex:1;min-width:130px;}
+.f label{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-family:'Rajdhani',sans-serif;font-weight:600;}
+.f input,.f select{background:var(--s2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;padding:7px 11px;outline:none;transition:border-color .2s;}
+.f input:focus,.f select:focus{border-color:var(--acc);}
+.f input::placeholder{color:var(--muted);}
+.f select option{background:var(--s2);}
+.btn-add{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:12px;letter-spacing:1px;text-transform:uppercase;padding:8px 20px;border-radius:7px;border:none;cursor:pointer;background:linear-gradient(135deg,var(--acc2),var(--acc));color:#000;transition:filter .2s;align-self:flex-end;white-space:nowrap;}
+.btn-add:hover{filter:brightness(1.1);}
+
+/* ACTIONS */
+.actions{padding:10px 36px 28px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+.btn{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;letter-spacing:1px;text-transform:uppercase;padding:10px 22px;border-radius:8px;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .2s;}
+.btn-rep{background:linear-gradient(135deg,var(--acc2),var(--acc));color:#000;}
+.btn-rep:hover{filter:brightness(1.1);transform:translateY(-1px);}
+.btn-dl{background:transparent;border:1.5px solid var(--acc);color:var(--acc);}
+.btn-dl:hover{background:rgba(240,165,0,.08);transform:translateY(-1px);}
+.btn-rst{background:transparent;border:1.5px solid var(--border);color:var(--muted);font-size:11px;padding:9px 16px;}
+.btn-rst:hover{border-color:var(--muted);color:var(--text);}
+
+/* MODAL */
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px;}
+.ov.open{display:flex;}
+.mo{background:var(--surface);border:1px solid var(--border);border-radius:12px;width:100%;max-width:800px;max-height:90vh;overflow-y:auto;}
+.mo-hd{background:linear-gradient(135deg,#1a1400,var(--surface));border-bottom:2px solid var(--acc);padding:18px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;}
+.mo-hd h2{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:18px;letter-spacing:1.5px;color:var(--acc);text-transform:uppercase;}
+.mo-close{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:all .2s;}
+.mo-close:hover{border-color:var(--bad);color:var(--bad);}
+.mo-body{padding:20px 24px;}
+.rm{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:9px;margin-bottom:18px;padding:12px;background:var(--s2);border-radius:8px;border:1px solid var(--border);}
+.rmi{display:flex;flex-direction:column;gap:2px;}
+.rmi .l{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-family:'Rajdhani',sans-serif;}
+.rmi .v{font-size:12px;color:var(--text);font-weight:500;}
+.rs{display:flex;gap:9px;margin-bottom:18px;flex-wrap:wrap;}
+.sc{flex:1;min-width:100px;padding:11px;border-radius:8px;text-align:center;}
+.sc .sn{font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:700;line-height:1;}
+.sc .sl{font-size:9px;text-transform:uppercase;letter-spacing:1px;margin-top:3px;opacity:.8;}
+.sg{background:var(--good-bg);border:1px solid var(--good);color:var(--good-t);}
+.so{background:var(--mod-bg);border:1px solid var(--mod);color:var(--mod-t);}
+.sr{background:var(--bad-bg);border:1px solid var(--bad);color:var(--bad-t);}
+.sb{background:var(--s2);border:1px solid var(--border);color:var(--muted);}
+.rst{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;padding:9px 0 7px;border-bottom:1px solid var(--border);margin-bottom:9px;color:var(--acc);}
+.rt{width:100%;border-collapse:collapse;margin-bottom:16px;font-size:12px;}
+.rt th{background:var(--s2);color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:1px;padding:7px 9px;text-align:left;font-family:'Rajdhani',sans-serif;font-weight:600;}
+.rt td{padding:6px 9px;border-bottom:1px solid var(--border);vertical-align:top;}
+.rt tr:last-child td{border-bottom:none;}
+.badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-family:'Rajdhani',sans-serif;font-weight:600;}
+.bg{background:var(--good-bg);color:var(--good-t);border:1px solid var(--good);}
+.bm{background:var(--mod-bg);color:var(--mod-t);border:1px solid var(--mod);}
+.bb{background:var(--bad-bg);color:var(--bad-t);border:1px solid var(--bad);}
+.mo-ft{padding:12px 24px;border-top:1px solid var(--border);display:flex;gap:9px;justify-content:flex-end;position:sticky;bottom:0;background:var(--surface);}
+
+/* TOAST */
+#toast{position:fixed;bottom:24px;right:24px;background:var(--s2);border:1px solid var(--acc);color:var(--acc);font-family:'Rajdhani',sans-serif;font-weight:600;font-size:11px;letter-spacing:1px;padding:9px 16px;border-radius:8px;z-index:9999;transition:opacity .4s;opacity:0;pointer-events:none;}
+
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+::-webkit-scrollbar-thumb:hover{background:var(--acc);}
+@media(max-width:580px){.hd,.tw,.actions,.toolbar,.add-panel,.prog-wrap,.prog-lbl{padding-left:14px;padding-right:14px;}.add-panel{margin-left:14px;margin-right:14px;}}
+</style>
+</head>
+<body>
+
+<div class="hd">
+  <div class="brand">
+    <div class="icon">💻</div>
+    <div>
+      <h1>DARSH DISPATCH</h1>
+      <p>Software Test Cases Checklist</p>
+    </div>
+  </div>
+  <div class="meta">
+    <div class="mf"><label>Client Name</label><input id="cn" type="text" placeholder="Enter client name…"></div>
+    <div class="mf"><label>System Model</label><input id="mn" type="text" placeholder="e.g. Darsh-Trio-26007"></div>
+    <div class="mf"><label>Verified By</label><input id="vb" type="text" placeholder="Engineer name…"></div>
+    <div class="mf"><label>Date</label><input id="dt" type="date"></div>
+    <div class="mf"><label>Location / Site</label><input id="sl" type="text" placeholder="Installation site…"></div>
+  </div>
+</div>
+
+<div class="prog-wrap"><div class="prog-fill" id="pf"></div></div>
+<div class="prog-lbl" id="pl">0 of 0 items filled</div>
+
+<div class="toolbar">
+  <span style="font-size:10px;color:var(--muted);font-family:'Rajdhani',sans-serif;letter-spacing:1px;text-transform:uppercase;">Filter:</span>
+  <button class="filter-btn active" onclick="setF('all',this)">All</button>
+  <button class="filter-btn" onclick="setF('Version Testing',this)">Version</button>
+  <button class="filter-btn" onclick="setF('Calibration',this)">Calibration</button>
+  <button class="filter-btn" onclick="setF('Teaching',this)">Teaching</button>
+  <button class="filter-btn" onclick="setF('Inspection',this)">Inspection</button>
+  <button class="filter-btn" onclick="setF('Error Handling',this)">Errors</button>
+  <button class="filter-btn" onclick="setF('Custom',this)">✏ Custom</button>
+  <input class="search" id="si" type="text" placeholder="Search test cases…" oninput="render()">
+</div>
+
+<div class="tw">
+  <table id="tbl">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Module</th>
+        <th>Test Case</th>
+        <th>Pass / Fail</th>
+        <th>Performance</th>
+        <th>Remarks</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="tb"></tbody>
+  </table>
+</div>
+
+<div class="add-panel">
+  <button class="add-toggle" id="atg" onclick="toggleAdd()">
+    <span class="arr">▶</span> ＋ Add New Test Case
+  </button>
+  <div class="add-form" id="af">
+    <div class="f">
+      <label>Module</label>
+      <select id="nm">
+        <option value="Version Testing">Version Testing</option>
+        <option value="Calibration">Calibration</option>
+        <option value="Teaching">Teaching</option>
+        <option value="Inspection">Inspection</option>
+        <option value="Error Handling">Error Handling</option>
+        <option value="License">License</option>
+        <option value="Custom">Custom</option>
+      </select>
+    </div>
+    <div class="f" style="flex:2;min-width:220px;">
+      <label>Test Case Description</label>
+      <input type="text" id="np" placeholder="Describe what to test…" onkeydown="if(event.key==='Enter')addRow()">
+    </div>
+    <button class="btn-add" onclick="addRow()">＋ Add</button>
+  </div>
+</div>
+
+<div class="actions">
+  <button class="btn btn-rep" onclick="openRep()">📋 Generate Report</button>
+  <button class="btn btn-dl" onclick="exportData()">💾 Export Save</button>
+  <button class="btn btn-dl" onclick="document.getElementById('imp').click()" style="border-color:var(--soft);color:var(--soft);">📂 Import Save</button>
+  <input type="file" id="imp" accept=".json" style="display:none" onchange="importData(event)">
+  <button class="btn btn-rst" onclick="clearEntries()">↺ Clear Entries</button>
+</div>
+
+<div class="ov" id="ov">
+  <div class="mo">
+    <div class="mo-hd">
+      <h2>📋 Software Test Report</h2>
+      <button class="mo-close" onclick="closeRep()">✕</button>
+    </div>
+    <div class="mo-body" id="rb"></div>
+    <div class="mo-ft">
+      <button class="btn btn-rst" onclick="closeRep()">Close</button>
+      <button class="btn btn-dl" onclick="downloadPDF()">⬇ Download PDF</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script>
+const DEFROWS=[
+  {m:'Version Testing',p:'Version :',c:false},
+  {m:'Calibration',p:'Images Should Display Live',c:false},
+  {m:'Calibration',p:'Exposure Changing',c:false},
+  {m:'Teaching',p:'New Data Collection',c:false},
+  {m:'Teaching',p:'Existing Data Collection',c:false},
+  {m:'Teaching',p:'Data Moving to NAS',c:false},
+  {m:'Inspection',p:'Selection of Models',c:false},
+  {m:'Inspection',p:'Detection',c:false},
+  {m:'Inspection',p:'Air Blow-1 & Air Blow-2 Settings',c:false},
+  {m:'Inspection',p:'Rejection Working',c:false},
+  {m:'Inspection',p:'Pass Criteria Verification',c:false},
+  {m:'Inspection',p:'Good vs Bad Count',c:false},
+  {m:'Inspection',p:'Defects Graph Updating Correctly',c:false},
+  {m:'Inspection',p:'Inspection Data Moving to NAS',c:false},
+  {m:'Inspection',p:'Disconnecting Error Notification',c:false},
+  {m:'Inspection',p:'Tower Light Working',c:false},
+  {m:'Error Handling',p:'Camera Disconnected Notification',c:false},
+  {m:'Error Handling',p:'DAAC Disconnected Notification',c:false},
+  {m:'Error Handling',p:'NAS Not Available Notification',c:false},
+  {m:'License',p:'Trial Version – 45 Days',c:false},
+];
+
+const STORE='darsh_sw_tc_v2';
+let ROWS=[], nextId=0, activeF='all';
+
+function load(){
+  try{
+    const raw=localStorage.getItem(STORE);
+    if(raw){
+      const s=JSON.parse(raw);
+      ROWS=s.rows||[];
+      nextId=s.nextId||ROWS.length;
+      if(s.meta){
+        document.getElementById('cn').value=s.meta.cn||'';
+        document.getElementById('mn').value=s.meta.mn||'';
+        document.getElementById('vb').value=s.meta.vb||'';
+        if(s.meta.dt)document.getElementById('dt').value=s.meta.dt;
+        document.getElementById('sl').value=s.meta.sl||'';
+      }
+      return true;
+    }
+  }catch(e){}
+  return false;
+}
+
+function save(){
+  try{
+    const rowData=ROWS.map(r=>{
+      const tr=document.querySelector(`#tb tr.dr[data-id="${r.id}"]`);
+      if(!tr)return{...r,inst:'',perf:'',rem:''};
+      return{
+        ...r,
+        inst:tr.querySelector('.is').value,
+        perf:tr.querySelector('.ps').value,
+        rem:tr.querySelector('.rem').value
+      };
+    });
+    const meta={
+      cn:document.getElementById('cn').value,
+      mn:document.getElementById('mn').value,
+      vb:document.getElementById('vb').value,
+      dt:document.getElementById('dt').value,
+      sl:document.getElementById('sl').value
+    };
+    localStorage.setItem(STORE,JSON.stringify({rows:rowData,nextId,meta,savedAt:Date.now()}));
+    toast('💾 Saved');
+  }catch(e){}
+}
+
+function render(){
+  const tb=document.getElementById('tb');
+  tb.innerHTML='';
+  const search=(document.getElementById('si').value||'').toLowerCase();
+  let curM='',num=0;
+  ROWS.forEach(row=>{
+    const fok=activeF==='all'||(activeF==='Custom'?row.c:row.m===activeF);
+    const sok=!search||row.p.toLowerCase().includes(search)||row.m.toLowerCase().includes(search);
+    if(!fok||!sok)return;
+
+    if(row.m!==curM){
+      curM=row.m;
+      const sr=document.createElement('tr');
+      sr.className='sec-row';
+      sr.dataset.m=row.m;
+      sr.innerHTML=`<td colspan="7">💻 ${row.m.toUpperCase()}</td>`;
+      tb.appendChild(sr);
+    }
+    num++;
+    const tr=document.createElement('tr');
+    tr.className='dr';
+    tr.dataset.id=row.id;
+    tr.dataset.m=row.m;
+    const instV=row.inst||'',perfV=row.perf||'',remV=row.rem||'';
+    tr.innerHTML=`
+      <td class="nc">${String(num).padStart(2,'0')}</td>
+      <td style="display:none">${row.m}</td>
+      <td class="pn">${row.p}${row.c?'<span class="cust-tag">CUSTOM</span>':''}</td>
+      <td><select class="is" onchange="onI(this)">${makeOpts(['Yes','No'],instV,'— Select —')}</select></td>
+      <td><select class="ps" onchange="onP(this)">${makeOpts(['Good','Moderate','Bad'],perfV,'— Select —')}</select></td>
+      <td><input type="text" class="rem" placeholder="Remarks…" value="${esc(remV)}" oninput="debSave()"></td>
+      <td style="width:30px;"><button class="del" title="${row.c?'Delete permanently':'Remove (custom only)'}" onclick="delRow(${row.id})" ${!row.c?'disabled style="opacity:.25;cursor:not-allowed;"':''}>✕</button></td>`;
+    tb.appendChild(tr);
+    // restore select styles
+    const is=tr.querySelector('.is'),ps=tr.querySelector('.ps');
+    if(is){is.value=instV;onI(is,true);}
+    if(ps){ps.value=perfV;onP(ps,true);}
+  });
+  prog();
+}
+
+function esc(s){return(s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function makeOpts(opts,val,placeholder){
+  let h=`<option value="">${placeholder}</option>`;
+  opts.forEach(o=>h+=`<option value="${o}"${val===o?' selected':''}>${o}</option>`);
+  return h;
+}
+
+function onI(s,silent){
+  s.className='is';
+  if(s.value==='Yes')s.classList.add('i-y');
+  else if(s.value==='No')s.classList.add('i-n');
+  prog();
+  if(!silent)debSave();
+}
+function onP(s,silent){
+  s.className='ps';
+  if(s.value==='Good')s.classList.add('p-g');
+  else if(s.value==='Moderate')s.classList.add('p-m');
+  else if(s.value==='Bad')s.classList.add('p-b');
+  if(!silent)debSave();
+}
+
+function prog(){
+  const sels=[...document.querySelectorAll('select.is')];
+  const filled=sels.filter(s=>s.value!=='').length;
+  const pct=sels.length?Math.round(filled/sels.length*100):0;
+  document.getElementById('pf').style.width=pct+'%';
+  document.getElementById('pl').textContent=`${filled} of ${sels.length} test cases filled (${pct}% complete)`;
+}
+
+function setF(type,btn){
+  activeF=type;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function toggleAdd(){
+  const f=document.getElementById('af'),b=document.getElementById('atg');
+  const open=f.classList.contains('show');
+  f.classList.toggle('show',!open);
+  b.classList.toggle('open',!open);
+  if(!open)setTimeout(()=>document.getElementById('np').focus(),80);
+}
+
+function addRow(){
+  const mod=document.getElementById('nm').value;
+  const part=document.getElementById('np').value.trim();
+  if(!part){
+    const el=document.getElementById('np');
+    el.style.borderColor='var(--bad)';
+    setTimeout(()=>el.style.borderColor='',1200);
+    return;
+  }
+  ROWS.push({id:nextId,m:mod,p:part,c:true,inst:'',perf:'',rem:''});
+  nextId++;
+  document.getElementById('np').value='';
+  save();
+  render();
+  setTimeout(()=>{
+    const el=document.querySelector(`#tb tr.dr[data-id="${nextId-1}"]`);
+    if(el)el.scrollIntoView({behavior:'smooth',block:'center'});
+  },100);
+}
+
+function delRow(id){
+  const row=ROWS.find(r=>r.id===id);
+  if(!row||!row.c){alert('Only custom test cases can be deleted permanently.');return;}
+  if(!confirm(`Delete "${row.p}" permanently?`))return;
+  ROWS=ROWS.filter(r=>r.id!==id);
+  save();
+  render();
+  toast('🗑 Test case deleted');
+}
+
+function collectData(){
+  return ROWS.map(row=>{
+    const tr=document.querySelector(`#tb tr.dr[data-id="${row.id}"]`);
+    if(!tr)return{...row,inst:row.inst||'',perf:row.perf||'',rem:row.rem||''};
+    return{
+      ...row,
+      inst:tr.querySelector('.is').value,
+      perf:tr.querySelector('.ps').value,
+      rem:tr.querySelector('.rem').value.trim()
+    };
+  });
+}
+
+function openRep(){
+  const data=collectData();
+  const cn=document.getElementById('cn').value||'—';
+  const mn=document.getElementById('mn').value||'—';
+  const vb=document.getElementById('vb').value||'—';
+  const dt=document.getElementById('dt').value||'—';
+  const sl=document.getElementById('sl').value||'—';
+  const pass=data.filter(r=>r.inst==='Yes');
+  const fail=data.filter(r=>r.inst==='No');
+  const attn=data.filter(r=>r.perf==='Bad'||r.perf==='Moderate');
+  const pend=data.filter(r=>r.inst==='');
+
+  const mkB=v=>v?`<span class="badge ${v==='Good'?'bg':v==='Moderate'?'bm':'bb'}">${v}</span>`:'—';
+  const mkI=v=>v==='Yes'?`<span class="badge bg">Pass</span>`:v==='No'?`<span class="badge bb">Fail</span>`:`<span class="badge" style="background:var(--s2);color:var(--muted);border:1px solid var(--border)">—</span>`;
+  const mkRows=rows=>rows.map((r,i)=>`<tr>
+    <td style="color:var(--muted)">${i+1}</td><td>${r.m}</td>
+    <td>${r.p}${r.c?'<span class="cust-tag">CUSTOM</span>':''}</td>
+    <td>${mkI(r.inst)}</td><td>${mkB(r.perf)}</td>
+    <td>${r.rem||'—'}</td></tr>`).join('');
+  const mkT=rows=>`<table class="rt"><thead><tr><th>#</th><th>Module</th><th>Test Case</th><th>Pass/Fail</th><th>Performance</th><th>Remarks</th></tr></thead><tbody>${mkRows(rows)}</tbody></table>`;
+
+  let html=`<div class="rm">
+    <div class="rmi"><span class="l">Client</span><span class="v">${cn}</span></div>
+    <div class="rmi"><span class="l">Model</span><span class="v">${mn}</span></div>
+    <div class="rmi"><span class="l">Verified By</span><span class="v">${vb}</span></div>
+    <div class="rmi"><span class="l">Date</span><span class="v">${dt}</span></div>
+    <div class="rmi"><span class="l">Site</span><span class="v">${sl}</span></div>
+  </div>
+  <div class="rs">
+    <div class="sc" style="background:var(--s2);border:1px solid var(--border);color:var(--muted)"><div class="sn">${data.length}</div><div class="sl">Total</div></div>
+    <div class="sc sg"><div class="sn">${pass.length}</div><div class="sl">Passed</div></div>
+    <div class="sc sr"><div class="sn">${fail.length}</div><div class="sl">Failed</div></div>
+    <div class="sc so"><div class="sn">${attn.length}</div><div class="sl">Attention</div></div>
+    <div class="sc sb"><div class="sn">${pend.length}</div><div class="sl">Pending</div></div>
+  </div>`;
+  if(pass.length){html+=`<div class="rst">✅ Passed (${pass.length})</div>${mkT(pass)}`;}
+  if(fail.length){html+=`<div class="rst">❌ Failed (${fail.length})</div>${mkT(fail)}`;}
+  if(attn.length){html+=`<div class="rst">⚠️ Needs Attention (${attn.length})</div>${mkT(attn)}`;}
+  if(pend.length){html+=`<div class="rst">⏳ Pending (${pend.length})</div>${mkT(pend)}`;}
+  if(!data.length){html+=`<p style="color:var(--muted);text-align:center;padding:40px 0;">No data filled yet.</p>`;}
+  document.getElementById('rb').innerHTML=html;
+  document.getElementById('ov').classList.add('open');
+}
+function closeRep(){document.getElementById('ov').classList.remove('open');}
+document.getElementById('ov').addEventListener('click',function(e){if(e.target===this)closeRep();});
+
+function clearEntries(){
+  if(!confirm('Clear all filled entries? Your test cases list (including custom ones) stays intact.'))return;
+  ROWS.forEach(r=>{r.inst='';r.perf='';r.rem='';});
+  save();render();
+}
+
+let _dt=null;
+function debSave(){clearTimeout(_dt);_dt=setTimeout(()=>{saveSilent();},600);}
+function saveSilent(){
+  try{
+    const rowData=ROWS.map(r=>{
+      const tr=document.querySelector(`#tb tr.dr[data-id="${r.id}"]`);
+      if(!tr)return{...r};
+      return{...r,inst:tr.querySelector('.is').value,perf:tr.querySelector('.ps').value,rem:tr.querySelector('.rem').value};
+    });
+    const meta={cn:document.getElementById('cn').value,mn:document.getElementById('mn').value,vb:document.getElementById('vb').value,dt:document.getElementById('dt').value,sl:document.getElementById('sl').value};
+    ROWS=rowData;
+    localStorage.setItem(STORE,JSON.stringify({rows:rowData,nextId,meta,savedAt:Date.now()}));
+  }catch(e){}
+}
+
+let _tt=null;
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.style.opacity='1';
+  clearTimeout(_tt);_tt=setTimeout(()=>{t.style.opacity='0';},2200);
+}
+
+document.addEventListener('change',function(e){if(e.target.closest('#tb')||e.target.closest('.hd'))debSave();});
+document.addEventListener('input',function(e){if(e.target.closest('.hd'))debSave();});
+
+/* ── DOWNLOAD PDF ── */
+function downloadPDF(){
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+  const cn=document.getElementById('cn').value||'—';
+  const mn=document.getElementById('mn').value||'—';
+  const vb=document.getElementById('vb').value||'—';
+  const dt=document.getElementById('dt').value||'—';
+  const sl=document.getElementById('sl').value||'—';
+  const data=collectData();
+
+  // Header background
+  doc.setFillColor(13,17,23);
+  doc.rect(0,0,297,210,'F');
+
+  // Title bar
+  doc.setFillColor(26,20,0);
+  doc.rect(0,0,297,22,'F');
+  doc.setDrawColor(240,165,0);
+  doc.setLineWidth(0.7);
+  doc.line(0,22,297,22);
+
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(16);
+  doc.setTextColor(240,165,0);
+  doc.text('DARSH DISPATCH',14,14);
+  doc.setFontSize(8);
+  doc.setTextColor(139,148,158);
+  doc.text('SOFTWARE TEST CASES REPORT',14,19);
+
+  // Meta info boxes
+  const metaFields=[['CLIENT',cn],['MODEL',mn],['VERIFIED BY',vb],['DATE',dt],['SITE',sl]];
+  const boxW=54, boxH=14, startX=14, startY=26;
+  metaFields.forEach(([lbl,val],i)=>{
+    const x=startX+i*(boxW+2);
+    doc.setFillColor(28,36,48);
+    doc.setDrawColor(48,54,61);
+    doc.setLineWidth(0.3);
+    doc.roundedRect(x,startY,boxW,boxH,2,2,'FD');
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(6);
+    doc.setTextColor(139,148,158);
+    doc.text(lbl,x+3,startY+4.5);
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(8);
+    doc.setTextColor(230,237,243);
+    doc.text(String(val).substring(0,24),x+3,startY+10);
+  });
+
+  // Stats row
+  const pass=data.filter(r=>r.inst==='Yes').length;
+  const fail=data.filter(r=>r.inst==='No').length;
+  const pend=data.filter(r=>r.inst==='').length;
+  const attn=data.filter(r=>r.perf==='Bad'||r.perf==='Moderate').length;
+  const stats=[['TOTAL',data.length,'#30363d','#8b949e'],['PASSED',pass,'#238636','#3fb950'],['FAILED',fail,'#da3633','#f85149'],['ATTENTION',attn,'#d29922','#e3b341'],['PENDING',pend,'#30363d','#8b949e']];
+  const sbW=44, sbH=14, sbY=44, sbX=14;
+  stats.forEach(([lbl,val,bc,tc],i)=>{
+    const x=sbX+i*(sbW+4);
+    const rgb=bc.replace('#','');
+    const r=parseInt(rgb.substring(0,2),16),g=parseInt(rgb.substring(2,4),16),b=parseInt(rgb.substring(4,6),16);
+    doc.setFillColor(r*0.3+10,g*0.3+10,b*0.3+10);
+    doc.setDrawColor(r,g,b);
+    doc.setLineWidth(0.4);
+    doc.roundedRect(x,sbY,sbW,sbH,2,2,'FD');
+    const [tr2,tg2,tb2]=[parseInt(tc.replace('#','').substring(0,2),16),parseInt(tc.replace('#','').substring(2,4),16),parseInt(tc.replace('#','').substring(4,6),16)];
+    doc.setTextColor(tr2,tg2,tb2);
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(14);
+    doc.text(String(val),x+sbW/2,sbY+8.5,{align:'center'});
+    doc.setFontSize(5.5);
+    doc.text(lbl,x+sbW/2,sbY+12.5,{align:'center'});
+  });
+
+  // Table
+  const rows=data.map((r,i)=>{
+    const instTxt=r.inst==='Yes'?'PASS':r.inst==='No'?'FAIL':'—';
+    return[i+1, r.m, r.p+(r.c?' [CUSTOM]':''), instTxt, r.perf||'—', r.rem||'—'];
+  });
+
+  doc.autoTable({
+    startY:62,
+    head:[['#','Module','Test Case','Pass/Fail','Performance','Remarks']],
+    body:rows,
+    theme:'plain',
+    styles:{font:'helvetica',fontSize:7.5,textColor:[230,237,243],cellPadding:3,fillColor:[22,27,34],lineColor:[48,54,61],lineWidth:0.2},
+    headStyles:{fillColor:[28,36,48],textColor:[240,165,0],fontStyle:'bold',fontSize:7,letterSpacing:1},
+    alternateRowStyles:{fillColor:[17,22,30]},
+    columnStyles:{
+      0:{cellWidth:8,halign:'center'},
+      1:{cellWidth:38},
+      2:{cellWidth:90},
+      3:{cellWidth:20,halign:'center',fontStyle:'bold'},
+      4:{cellWidth:25,halign:'center'},
+      5:{cellWidth:85}
+    },
+    didDrawCell:function(data){
+      if(data.section==='body'&&data.column.index===3){
+        const v=data.cell.raw;
+        if(v==='PASS'){doc.setTextColor(63,185,80);}
+        else if(v==='FAIL'){doc.setTextColor(248,81,73);}
+        else{doc.setTextColor(139,148,158);}
+      }
+      if(data.section==='body'&&data.column.index===4){
+        const v=data.cell.raw;
+        if(v==='Good'){doc.setTextColor(63,185,80);}
+        else if(v==='Moderate'){doc.setTextColor(227,179,65);}
+        else if(v==='Bad'){doc.setTextColor(248,81,73);}
+        else{doc.setTextColor(139,148,158);}
+      }
+    }
+  });
+
+  // Footer
+  const pgCount=doc.getNumberOfPages();
+  for(let i=1;i<=pgCount;i++){
+    doc.setPage(i);
+    doc.setFillColor(13,17,23);
+    doc.rect(0,200,297,10,'F');
+    doc.setDrawColor(48,54,61);
+    doc.setLineWidth(0.2);
+    doc.line(0,200,297,200);
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(6.5);
+    doc.setTextColor(139,148,158);
+    doc.text('DARSH DISPATCH · Software Test Report · Generated '+new Date().toLocaleDateString(),14,206);
+    doc.text('Page '+i+' / '+pgCount,283,206,{align:'right'});
+  }
+
+  doc.save('darsh_test_report_'+(dt||'report')+'.pdf');
+  toast('✅ PDF downloaded');
+}
+
+/* ── EXPORT SAVE (JSON) ── */
+function exportData(){
+  saveSilent();
+  const raw=localStorage.getItem(STORE)||'{}';
+  const blob=new Blob([raw],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download='darsh_testcases_save_'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('💾 Save exported successfully');
+}
+
+/* ── IMPORT SAVE (JSON) ── */
+function importData(e){
+  const file=e.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    try{
+      const parsed=JSON.parse(ev.target.result);
+      if(!parsed.rows)throw new Error('Invalid save file');
+      localStorage.setItem(STORE,ev.target.result);
+      ROWS=parsed.rows||[];
+      nextId=parsed.nextId||ROWS.length;
+      if(parsed.meta){
+        document.getElementById('cn').value=parsed.meta.cn||'';
+        document.getElementById('mn').value=parsed.meta.mn||'';
+        document.getElementById('vb').value=parsed.meta.vb||'';
+        if(parsed.meta.dt)document.getElementById('dt').value=parsed.meta.dt;
+        document.getElementById('sl').value=parsed.meta.sl||'';
+      }
+      render();
+      toast('📂 Save imported successfully');
+    }catch(err){alert('Invalid save file. Please use a file exported from this app.');}
+    e.target.value='';
+  };
+  reader.readAsText(file);
+}
+
+// init
+const restored=load();
+if(!restored){
+  ROWS=DEFROWS.map((r,i)=>({...r,id:i,inst:'',perf:'',rem:''}));
+  nextId=ROWS.length;
+  document.getElementById('dt').valueAsDate=new Date();
+}
+render();
+if(restored)toast('✅ Session restored');
+</script>
+</body>
+</html>
